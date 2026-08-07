@@ -19,6 +19,7 @@
   --color-sucessConfirm: #28A74D;
   --color-errorAlert: #E74C3C;
   --color-borderColor: #E4E7EC;
+  --color-whiteText: #FFF;
 }
 
 html {
@@ -31,8 +32,20 @@ html {
   box-sizing: inherit;
 }
 
+* {
+  transition: all ease .3s;
+}
+
 .active{
   color: #FFF;
   background-color: #3A6Ea5;
   border-radius: .3rem;
+}
+
+.active svg path{
+  stroke: #FFF;
+}
+
+.active span{
+  color: #FFF;
 }
