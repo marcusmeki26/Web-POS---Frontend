@@ -1,25 +1,17 @@
-// Adding current date & time
-// function updateTime(){
-//   const dateTimeCntr = document.getElementById("date-time-container");
-//   const now = new Date();
-//   const dayOfTheWeek = now.toLocaleDateString("en-US", {weekday: "long"});
-//   const monthName = now.toLocaleDateString("en-US", {month: "long"});
+import { processCreds } from "./utilities";
 
-//   const day = now.getDate();
-//   const year = now.getFullYear();
-//   const timeString = now.toLocaleTimeString("en-US", {
-//     hour: '2-digit',
-//     minute: '2-digit',
-//     hour12: true
-//   });
+const loginForm = document.getElementById("login-form");
 
-//   const displayDateTime = `${dayOfTheWeek}, ${day} ${monthName} ${year} at ${timeString}`;
-//   const spanDateTime = document.createElement("span");
-//   spanDateTime.textContent = displayDateTime;
-//   dateTimeCntr.appendChild(spanDateTime);
-// }
-import { updateTime } from './datefunction';
+loginForm.addEventListener('submit', (event) => {
+  event.preventDefault();
 
-updateTime();
+  const userId = document.getElementById("user-id").value.trim();
+  const userPass = document.getElementById("user-password").value.trim();
 
-setInterval(updateTime, 1000);
+  // if (!username || !password) { // Commented since there is still no backend
+  //   alert('Please fill in all fields.');
+  //   return;
+  // }
+
+  processCreds({userId, userPass});
+});
