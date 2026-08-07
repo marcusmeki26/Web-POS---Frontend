@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="src/css/main.css"> 
+    <title>Web POS</title>
+</head>
+<body class="h-screen flex bg-primaryBg body">
+    <!-- Add navigation -->
+    <nav class="flex-1 border-r-1 border-borderColor">
+        <div class="flex justify-center border-b border-borderColor">
+            <img class="max-w-5p" src="/Web POS Logo.png" alt="Web POS Logo">
+            <div class="flex flex-col justify-center">
+                <span class="font-brand font-extrabold text-primaryColor text-sm">Web POS</span>
+                <span class="font-light text-secondaryColor text-[.5rem]">Simple Sales, Powerful Business</span>
+            </div>
+        </div>
+        <ul id="navigation-list" class="pl-[1rem] pt-[.5rem] pr-[1rem]">
+            <li id="menu-list" class="flex gap-[.5rem] items-center p-[.5rem] text-xs cursor-pointer">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 18V10C20 8.11438 20 7.17157 19.4142 6.58579C18.8284 6 17.8856 6 16 6H4V18C4 19.8856 4 20.8284 4.58579 21.4142C5.17157 22 6.11438 22 8 22H16C17.8856 22 18.8284 22 19.4142 21.4142C20 20.8284 20 19.8856 20 18Z" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 11C13.6569 11 15 12.3431 15 14M12 11C10.3431 11 9 12.3431 9 14M12 11V10M15 14H9M15 14H16M9 14H8" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8 18H16" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4 6L11.3846 2.90586C13.0337 2.21492 13.8582 1.86945 14.5149 2.04543C14.9408 2.15954 15.3173 2.41193 15.5859 2.76336C16 3.30532 16 4.20355 16 6" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="font-medium text-primaryColor">Menu List</span>
+            </li> 
+            <li id="manage-table" class="flex gap-[.5rem] items-center text-xs p-[.5rem] cursor-pointer">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 17C4.5 17 4.5 16 3 16L4.17111 11.9011C4.57006 10.5048 4.76954 9.80661 5.30421 9.4033C5.83888 9 6.56499 9 8.01721 9H15.9828C17.435 9 18.1611 9 18.6958 9.4033C19.2305 9.80661 19.4299 10.5048 19.8289 11.9011L21 16C19.5 16 19.5 17 18 17C16.5 17 16.5 16 15 16C13.5 16 13.5 17 12 17C10.5 17 10.5 16 9 16C7.5 16 7.5 17 6 17Z" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8 9V8C8 5.79086 9.79086 4 12 4M16 9V8C16 5.79086 14.2091 4 12 4M12 4V3" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 17V21M12 21H14M12 21H10" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="font-medium text-primaryColor">Manage Table</span>
+            </li>
+        </ul>
+    </nav>
+    <div class="flex-6">
+        <header class="bg-secondaryBg">
+            <div class="flex justify-between items-center pl-[.5rem] pr-[.5rem] h-[2.85rem] border-b-1 border-borderColor">
+                <span class="font-bold text-primaryColor">Squire's Food</span>
+                <div class="flex gap-[.5rem] items-center">
+                    <div class="flex bg-white h-full gap-[.5rem] p-[.4rem] border border-borderColor rounded-sm" id="date-time-container">
+                    </div>
+                    <div class="bg-white h-full p-[.4rem] border border-borderColor rounded-sm cursor-pointer">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18.9999 10.5V9.99995C18.9999 6.22876 18.9999 4.34311 17.8283 3.17154C16.6568 2 14.7712 2 11 2C7.22883 2 5.3432 2.00006 4.17163 3.17159C3.00009 4.34315 3.00007 6.22872 3.00004 9.99988L3 14.5C2.99997 17.7874 2.99996 19.4312 3.90788 20.5375C4.07412 20.7401 4.25986 20.9258 4.46242 21.0921C5.56877 22 7.21249 22 10.4999 22" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M7 7H15M7 11H11" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M18 18.5L16.5 17.95V15.5M12 17.5C12 19.9853 14.0147 22 16.5 22C18.9853 22 21 19.9853 21 17.5C21 15.0147 18.9853 13 16.5 13C14.0147 13 12 15.0147 12 17.5Z" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <span class="text-dividerColor"> | </span>
+                    <div class="flex items-center gap-[.3rem] bg-white h-full p-[.4rem] border border-borderColor rounded-sm">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 9C15 7.34315 13.6569 6 12 6C10.3431 6 9 7.34315 9 9C9 10.6569 10.3431 12 12 12C13.6569 12 15 10.6569 15 9Z" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M17 17C17 14.2386 14.7614 12 12 12C9.23858 12 7 14.2386 7 17" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="text-xs text-primaryColor">Cashier's Name</span>
+                        <svg class="cursor-pointer" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <section id="app" class="p-3">
+    
+        </section>
+    </div>
+    <script type="module" src="./src/js/landingpage.js"></script>
+</body>
+</html> 
