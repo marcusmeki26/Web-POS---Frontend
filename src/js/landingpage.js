@@ -1,6 +1,6 @@
 import { updateTime } from './datefunction';
-import { renderMenuList } from './menulist';
-import { renderManageTable } from './managetable';
+// import { renderMenuList } from './menulist';
+// import { renderManageTable } from './managetable';
 
 const basePath = import.meta.env.VITE_ROOT_PROJECT_PATH;
 
@@ -18,22 +18,35 @@ function navigate(page){
 
   const navLinks = document.getElementById("navigation-list");
   if(navLinks){
+    // Removes .active class on li
     for(const child of navLinks.children)
       child.classList.remove("active");
   }
   
   if(page === "menu-list"){
-    const menuList = document.getElementById("menu-list");
-    menuList.classList.add("active");
+    import('./menulist.js')
+    .then(({ renderMenuList }) => {
+      // Code here
+      const menuList = document.getElementById("menu-list");
+      menuList.classList.add("active");
 
-    // import(`${basePath}/src/js/menulist.js`);
-    renderMenuList(app);
+      renderMenuList(app);
+    })
+    .catch((err) => {
+      console.error("Failed to load module:", err);
+    });
   }else if(page === "manage-table"){
-    const manageTable = document.getElementById("manage-table");
-    manageTable.classList.add("active");
+    import('./managetable.js')
+    .then(({ renderManageTable }) => {
+      // Code here
+      const manageTable = document.getElementById("manage-table");
+      manageTable.classList.add("active");
 
-    // import(`${basePath}/src/js/managetable.js`);
-    renderManageTable(app);
+      renderManageTable(app);
+    })
+    .catch((err) => {
+      console.error("Failed to load module:", err);
+    });
   }
 }
 
