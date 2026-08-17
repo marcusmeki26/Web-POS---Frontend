@@ -9,7 +9,7 @@ export const orderService = {
     const response = await api.get("/v1/order");
     return response.data;
   },
-  getOrder: async (foodId) => {
+  getOrderByFoodId: async (foodId) => {
     const response = await api.get(`/v1/order/${foodId}`);
     return response.data;
   },
