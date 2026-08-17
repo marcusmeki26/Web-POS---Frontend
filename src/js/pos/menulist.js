@@ -1,11 +1,9 @@
 import { split } from "postcss/lib/list";
-import { categoryService } from "./services/categoryservice";
-import { foodService } from './services/foodservice';
-import { orderService } from "./services/orderservice";
+import { categoryService } from "../services/categoryservice";
+import { foodService } from '../services/foodservice';
+import { orderService } from "../services/orderservice";
 
-// Add functionality for changing quantity for selected menu :REMOVE-COMMENT
-// Add functionality for changing total amount :REMOVE-COMMENT
-// Change button style when `added to cart` :REMOVE-COMMENT
+// Add functionality for Check variant prices
 
 async function renderMenuList(container){
   let classes;
@@ -118,7 +116,7 @@ async function renderMenuList(container){
   
   // UTILITIES
   // Displays Second Row
-  async function displayMenuList(menuList){ // Current Problem, having multiple DOM creation+
+  async function displayMenuList(menuList){
     let receiptNo = "";
 
     if(section.children.length === 2){
@@ -188,22 +186,213 @@ async function renderMenuList(container){
 
         // Add to cart button
         const btnATC = document.createElement("button");
-        btnATC.id = `${element.id}-ATC`;
         if(spanStatus.lastChild.textContent.trim() === "Available"){
-          if(element.withVariant){
+          if(element.withVariant){ // WITH VARIANT
             classes = ["flex", "justify-center", "gap-[.3rem]", "bg-primaryColor", "text-primaryBg", "font-bold", "rounded-md", "py-[.2rem]", "cursor-pointer", "hover:bg-secondaryBg", "hover:text-primaryColor"];
             btnATC.classList.add(...classes);
     
-            // const spanPlusSymbol = document.createElement("span");
             const spanBtnText = document.createElement("span");
-            // spanPlusSymbol.textContent = "+";
             spanBtnText.textContent = "Check Variant Prices";
-            // btnATC.appendChild(spanPlusSymbol);
+            spanBtnText.addEventListener("click", async () => {
+              console.log(element); 
+
+              const body = document.getElementById("body");
+
+              const divModalVariant = document.createElement("div");
+              classes = ["flex", "justify-center", "items-center", "absolute", "w-full", "h-full", "bg-secondaryBg/50", "text-primaryColor", "z-[3]"];
+              divModalVariant.classList.add(...classes);
+
+              const divModalCntrChild = document.createElement("div");
+              classes = ["flex", "gap-[.6rem]", "flex-col", "bg-primaryBg", "p-3", "rounded-md"];
+              divModalCntrChild.classList.add(...classes);
+
+              const spanX = document.createElement("span");
+              classes = ["self-end", "text-errorAlert", "cursor-pointer"];
+              spanX.classList.add(...classes);
+              spanX.textContent = "X";
+              divModalCntrChild.appendChild(spanX);
+
+              spanX.addEventListener("click", () => {
+                body.removeChild(divModalVariant);
+              });
+
+              const spanCaption = document.createElement("span");
+              classes = ["font-bold", "text-[1.2rem]"];
+              spanCaption.classList.add(...classes);
+              spanCaption.textContent = `${element.foodName} available variants`;
+              divModalCntrChild.appendChild(spanCaption);
+
+              element.inventory.forEach(prodVariant => {
+                // Create a variable for each data/record needed. Use it for also passing into API :REMOVE-COMMENT
+                const sizeId = prodVariant.productVariant.size.sizeId;
+                const sizeName = prodVariant.productVariant.size.sizeName;
+                const sizePrice = prodVariant.productVariant.price;
+                const sizeQty = prodVariant.productVariant.quantity;
+
+                const divVariantPriceCntr = document.createElement("div");
+                classes = ["flex", "justify-evenly"];
+                divVariantPriceCntr.classList.add(...classes);
+                const spanProdVariant = document.createElement("span");
+                spanProdVariant.textContent = sizeName;
+                const prodVariantPrice = new Intl.NumberFormat("en-PH", {
+                  style: "currency",
+                  currency: "PHP"
+                }).format(sizePrice);
+                const spanProdVariantPrice = document.createElement("span");
+                spanProdVariantPrice.textContent = prodVariantPrice;
+                const btnATCVariant = document.createElement("button");
+                classes = ["flex", "bg-primaryColor", "text-primaryBg", "font-bold", "rounded-md", "p-[.2rem]", "cursor-pointer", "hover:bg-secondaryBg", "hover:text-primaryColor"];
+                btnATCVariant.classList.add(...classes);
+                btnATCVariant.textContent = "Add to Cart";
+                btnATCVariant.id = `${element.id}-ATC`;
+
+                btnATCVariant.addEventListener("click", async () => {
+                  // Main Mid Container
+                  const SCMidCntr = document.getElementById("second-column-mid");
+                  // SCMidCntr.classList.add(...classes);
+    
+                  // Child Container
+                  const divMenuDisplay = document.createElement("div");
+                  classes = ["flex", "border", "max-h-[4.15rem]", "border-borderColor", "p-[.5rem]", "gap-[.3rem]", "text-primaryColor", "font-semibold", "rounded-md"];
+                  divMenuDisplay.classList.add(...classes);
+                  divMenuDisplay.id = `${element.foodId}-MD`;
+    
+                  // Image
+                  const imgMD = document.createElement("img"); 
+                  classes = ["flex-1", "rounded-sm"];
+                  imgMD.style.width = "20%";
+                  // imgMD.style.height = "100%";
+                  imgMD.src = "/sample_img.jpg";
+                  imgMD.classList.add(...classes);
+    
+                  // Right Side Container
+                  const divMDRS = document.createElement("div");
+                  classes = ["flex", "flex-col", "justify-between", "flex-2", "text-sm"];
+                  divMDRS.classList.add(...classes);
+                  
+                  // Right Side Top Side
+                  const divMDTS = document.createElement("div");
+                  classes = ["flex", "flex-col"];
+                  divMDTS.classList.add(...classes);
+                  
+                  // Short Food & Selected Counter container
+                  const divMDTSFCCntr = document.createElement("div");
+                  classes = ["flex", "gap-[.3rem]"];
+                  divMDTSFCCntr.classList.add(...classes);
+                  // Short Food Description
+                  const spanFDMDTS = document.createElement("span");
+                  spanFDMDTS.setAttribute("data-counter", 0);
+                  classes = ["leading-none"];
+                  spanFDMDTS.classList.add(...classes);
+                  spanFDMDTS.textContent = element.shortFoodDesc;
+                  let selectedCtr = spanFDMDTS.getAttribute("data-counter");
+                  selectedCtr++;
+
+                  // const spanCMDTS = document.createElement("span");
+                  // classes = ["text-secondaryColor/50", "font-normal", "leading-none"];
+                  // spanCMDTS.classList.add(...classes);
+                  // spanCMDTS.id = `${element.id}-MDQTY`;
+                  // spanCMDTS.textContent = `(${selectedCtr})`;
+                  
+                  divMDTSFCCntr.appendChild(spanFDMDTS);
+                  // divMDTSFCCntr.appendChild(spanCMDTS);
+    
+                  // Size Display
+                  const spanSMDTS = document.createElement("span");
+                  classes = ["text-[.7rem]", "text-secondaryColor", "font-medium", "leading-none", "whitespace-pre"];
+                  spanSMDTS.classList.add(...classes);
+                  spanSMDTS.textContent = `\tSize:${sizeName}`;
+                  
+                  divMDTS.appendChild(divMDTSFCCntr);
+                  divMDTS.appendChild(spanSMDTS);
+                  
+                  // Bottom Side
+                  const divMDBS = document.createElement("div");
+                  classes = ["flex", "justify-between", "items-end"];
+                  divMDBS.classList.add(...classes);
+    
+                  // Price
+                  const spanMDLSBS = document.createElement("span");
+                  classes = ["leading-none"];
+                  spanMDLSBS.classList.add(...classes);
+                  spanMDLSBS.id = `${element.id}-MDPRICE`;
+                  spanMDLSBS.textContent = prodVariantPrice;
+                  
+                  // SVG Container
+                  const divMDRSBSCntr = document.createElement("div");
+                  classes = ["flex", "gap-[.3rem]"];
+                  divMDRSBSCntr.classList.add(...classes);
+    
+                  // Add edit & delete SVG
+                  divMDRSBSCntr.innerHTML = 
+                  `
+                    <svg width="12" height="12" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M25.3342 6.99391C26.6756 5.54064 27.3463 4.81402 28.0589 4.39017C29.7784 3.36747 31.8959 3.33566 33.6443 4.30627C34.3688 4.70854 35.06 5.41471 36.4426 6.82707C37.8251 8.23942 38.5165 8.94559 38.9102 9.68577C39.8604 11.4717 39.8293 13.6347 38.8281 15.3914C38.4132 16.1194 37.7018 16.8045 36.2793 18.1747L19.3526 34.4778C16.6567 37.0745 15.3088 38.3729 13.6241 39.0308C11.9394 39.6888 10.0873 39.6404 6.38321 39.5436L5.87925 39.5304C4.7516 39.5009 4.18777 39.4862 3.86003 39.1141C3.53226 38.7422 3.57701 38.1678 3.66651 37.0193L3.71511 36.3956C3.96698 33.1624 4.09291 31.546 4.72424 30.0929C5.35556 28.6397 6.44456 27.46 8.62254 25.1002L25.3342 6.99391Z" stroke="#161616" stroke-width="2.7" stroke-linejoin="round"/>
+                      <path d="M23.3984 7.19995L35.9984 19.8" stroke="#161616" stroke-width="2.7" stroke-linejoin="round"/>
+                      <path d="M25.1992 39.6001H39.5992" stroke="#161616" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+    
+                    <svg width="12" height="12" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M35.1016 9.90002L33.9861 27.9452C33.701 32.5555 33.5586 34.8608 32.403 36.5182C31.8315 37.3376 31.096 38.0292 30.2428 38.5488C28.5173 39.6 26.2078 39.6 21.5884 39.6C16.9632 39.6 14.6505 39.6 12.9239 38.5468C12.0702 38.0263 11.3344 37.3335 10.7632 36.5127C9.60795 34.8527 9.46857 32.5442 9.18986 27.9274L8.10156 9.90002" stroke="#161616" stroke-width="2.7" stroke-linecap="round"/>
+                      <path d="M5.39844 9.89998H37.7984M28.8987 9.89998L27.67 7.36509C26.8537 5.68124 26.4455 4.83931 25.7415 4.31423C25.5854 4.19776 25.42 4.09415 25.247 4.00444C24.4675 3.59998 23.5318 3.59998 21.6605 3.59998C19.7423 3.59998 18.7832 3.59998 17.9907 4.02139C17.815 4.11479 17.6474 4.2226 17.4896 4.34368C16.7774 4.89004 16.3796 5.76277 15.5839 7.50824L14.4937 9.89998" stroke="#161616" stroke-width="2.7" stroke-linecap="round"/>
+                      <path d="M17.1016 29.7V18.9" stroke="#161616" stroke-width="2.7" stroke-linecap="round"/>
+                      <path d="M26.1016 29.7V18.9" stroke="#161616" stroke-width="2.7" stroke-linecap="round"/>
+                    </svg>
+                  `;
+                  divMDBS.appendChild(spanMDLSBS);
+                  divMDBS.appendChild(divMDRSBSCntr);
+    
+                  divMDRS.appendChild(divMDTS);
+                  divMDRS.appendChild(divMDBS);
+    
+                  divMenuDisplay.appendChild(imgMD);
+                  divMenuDisplay.appendChild(divMDRS);
+
+                  const orderData = {
+                    receiptNo: receiptNo,
+                    foodId: element.id,
+                    shortFoodDesc: element.shortFoodDesc,
+                    price: sizePrice,
+                    sizeId: sizeId,
+                    size: sizeName,
+                    quantity: selectedCtr,
+                    placed: false,
+                    tableId: null
+                  }
+
+                  const response = await orderService.postOrder(orderData);
+                  if(response.status != 201) // Resets the DOM of mid container
+                    SCMidCntr.innerHTML = ``;
+                  else{
+                    SCMidCntr.appendChild(divMenuDisplay);
+
+                    const btnATCVariant = document.getElementById(`${orderData.foodId}-ATC`);
+                    const btnAM = document.getElementById(`${orderData.foodId}-AM`);
+                    btnATCVariant.classList.remove("flex");
+                    btnATCVariant.classList.add("hidden");
+                    btnAM.classList.add("flex"); // Add my own add more design
+                    btnAM.classList.remove("hidden");
+                    btnAM.textContent = `Add more (${selectedCtr})`;
+                  }
+                });
+
+                divVariantPriceCntr.appendChild(spanProdVariant);
+                divVariantPriceCntr.appendChild(spanProdVariantPrice);
+                divVariantPriceCntr.appendChild(btnATCVariant);
+
+                divModalCntrChild.appendChild(divVariantPriceCntr);
+              });
+
+              divModalVariant.appendChild(divModalCntrChild);
+
+              body.appendChild(divModalVariant);
+            });
             btnATC.appendChild(spanBtnText);
-          }else{
+          }else{ // WITHOUT VARIANT
             // Add to cart button
             classes = ["flex", "justify-center", "gap-[.3rem]", "bg-primaryColor", "text-primaryBg", "font-bold", "rounded-md", "py-[.2rem]", "cursor-pointer", "hover:bg-secondaryBg", "hover:text-primaryColor"];
             btnATC.classList.add(...classes);
+            btnATC.id = `${element.id}-ATC`;
     
             const spanPlusSymbol = document.createElement("span");
             const spanBtnText = document.createElement("span");
@@ -356,6 +545,7 @@ async function renderMenuList(container){
         }else{ 
           classes = ["flex", "justify-center", "gap-[.3rem]", "bg-primaryColor/50", "text-primaryBg", "font-bold", "rounded-md", "py-[.2rem]", "cursor-not-allowed"];
           btnATC.classList.add(...classes);
+          btnATC.id = `${element.id}-ATC`;
           btnATC.disabled = true;
 
           const spanPlusSymbol = document.createElement("span");

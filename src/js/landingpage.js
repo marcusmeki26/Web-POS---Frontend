@@ -1,6 +1,4 @@
-import { updateTime } from './datefunction';
-// import { renderMenuList } from './menulist';
-// import { renderManageTable } from './managetable';
+import { updateTime } from './pos/datefunction.js';
 
 const basePath = import.meta.env.VITE_ROOT_PROJECT_PATH;
 
@@ -24,7 +22,7 @@ function navigate(page){
   }
   
   if(page === "menu-list"){
-    import('./menulist.js')
+    import('./pos/menulist.js')
     .then(({ renderMenuList }) => {
       // Code here
       const menuList = document.getElementById("menu-list");
@@ -36,7 +34,7 @@ function navigate(page){
       console.error("Failed to load module:", err);
     });
   }else if(page === "manage-table"){
-    import('./managetable.js')
+    import('./pos/managetable.js')
     .then(({ renderManageTable }) => {
       // Code here
       const manageTable = document.getElementById("manage-table");
