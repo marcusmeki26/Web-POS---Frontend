@@ -13,6 +13,10 @@ export const orderService = {
     const response = await api.get(`/v1/order/${foodId}`);
     return response.data;
   },
+  getOrderSum: async () => {
+    const response = await api.get("/v1/order/sum");
+    return response.data;
+  },
   patchOrder: async (id, patchRequest) => {
     const response = await api.patch(`/v1/order/${id}`, patchRequest);
     return response;
