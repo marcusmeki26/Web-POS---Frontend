@@ -1,11 +1,23 @@
-import { split } from "postcss/lib/list";
 import { categoryService } from "../services/categoryservice";
 import { foodService } from '../services/foodservice';
 import { orderService } from "../services/orderservice";
+import { taxService } from "../services/taxservice";
+import { tableListService } from "../services/tablelistservice";
 
-// Transaction details below order summary should now be working :REMOVE-COMMENT
+// Proceed to Payment is the last process where it will send the whole transaction to the backend. There will be a popup of how much
+//  +the customer paid :REMOVE-COMMENT 
+// The table list view should have filter for the number of seats. >= No. of seats is the filter :REMOVE-COMMENT 
 
 async function renderMenuList(container){
+  sessionStorage.setItem("active-tab", "menu");
+
+  // Set tax percentage on local storage
+  const taxPercentage = await taxService.getActiveTax();
+  if(taxPercentage){
+    localStorage.setItem("tax-percent", taxPercentage.taxPercentage);
+    localStorage.setItem("tax-description", taxPercentage.taxDescription);
+  }
+
   let classes;
   let totalCatCnt = 0;
 
@@ -379,14 +391,18 @@ async function renderMenuList(container){
                       SCMidCntr.innerHTML = ``;
                     else{
                       SCMidCntr.appendChild(divMenuDisplay);
-  
+
+                      UpdateTotalDetails();
+
                       const btnATCV = document.getElementById(`${orderData.sizeId}-ATC-VARIANT`);
                       const btnAMV = document.getElementById(`${orderData.sizeId}-AM-VARIANT`);
-                      btnATCV.classList.remove("flex");
-                      btnATCV.classList.add("hidden");
-                      btnAMV.classList.add("flex");
-                      btnAMV.classList.remove("hidden");
-                      btnAMV.textContent = `Add more (${selectedCtr})`;
+                      if(btnATCV != null && btnAMV != null){
+                        btnATCV.classList.remove("flex");
+                        btnATCV.classList.add("hidden");
+                        btnAMV.classList.add("flex");
+                        btnAMV.classList.remove("hidden");
+                        btnAMV.textContent = `Add more (${selectedCtr})`;
+                      }
                     }
                   });
                 }
@@ -439,6 +455,8 @@ async function renderMenuList(container){
                       }).format(sizePrice * qtyCtr);
                       spanMDLSBS.textContent = formattedAmt;
                     }
+
+                    UpdateTotalDetails();
                   }
                 });
                 
@@ -595,7 +613,9 @@ async function renderMenuList(container){
                   SCMidCntr.innerHTML = ``;
                 else{
                   SCMidCntr.appendChild(divMenuDisplay);
-  
+
+                  UpdateTotalDetails((orderData.price * orderData.quantity));
+
                   const btnATC = document.getElementById(`${orderData.foodId}-ATC`);
                   const btnAM = document.getElementById(`${orderData.foodId}-AM`);
                   btnATC.classList.remove("flex");
@@ -667,6 +687,8 @@ async function renderMenuList(container){
               }).format(element.price * qtyCtr);
               spanMDLSBS.textContent = formattedAmt;
             }
+
+            await UpdateTotalDetails(element.price);
           }
         });
 
@@ -745,10 +767,15 @@ async function renderMenuList(container){
       divTDST.appendChild(spanTDST);
       divTDST.appendChild(spanTDSTP);
       // Taxes
+      const taxDesc = localStorage.getItem("tax-description");
       const divTDT = document.createElement("div");
       divTDT.classList.add(...sharedBottomClasses);
       const spanTDT = document.createElement("span");
-      spanTDT.textContent = "Taxes";
+      spanTDT.textContent = "Taxes:";
+      if(taxDesc === undefined || taxDesc === null || taxDesc === "")
+        spanTDT.textContent += " (No Tax Set)";
+      else
+        spanTDT.textContent += ` ${taxDesc}`;
       const spanTDTP = document.createElement("span");
       spanTDTP.id = "taxes-price";
       spanTDTP.textContent = formattedAmt;
@@ -797,20 +824,29 @@ async function renderMenuList(container){
       const spanBOTT = document.createElement("span");
       spanBOTT.textContent = "Order Type";
       const selectBOTS = document.createElement("select");
+      selectBOTS.add(new Option("Order Type", "", true, true));
+      selectBOTS.options[0].disabled = true;
       selectBOTS.add(new Option("Dine-in", "1"));
       selectBOTS.add(new Option("Take out", "2"));
       divBOT.appendChild(spanBOTT);
       divBOT.appendChild(selectBOTS);
       
       // Table No
+      // If take-out is selected make the table no. `NONE` :REMOVE-COMMENT
       const divBTN = document.createElement("div");
       divBTN.classList.add(...sharedBottomClasses);
       const spanBTNT = document.createElement("span");
       spanBTNT.textContent = "Select Table";
       const selectBTNS = document.createElement("select");
-      selectBTNS.add(new Option("Table 1", "1"));
-      selectBTNS.add(new Option("Table 2", "2"));
-      selectBTNS.add(new Option("Table 3", "3"));
+      selectBTNS.add(new Option("Table Option", "", true, true));
+      selectBTNS.options[0].disabled = true;
+      const tableList = await tableListService.getTables();
+      tableList.forEach(table => {
+        selectBTNS.add(new Option(table.tableName, table.id));
+      });
+      // selectBTNS.add(new Option("Table 1", "1"));
+      // selectBTNS.add(new Option("Table 2", "2"));
+      // selectBTNS.add(new Option("Table 3", "3"));
       divBTN.appendChild(spanBTNT);
       divBTN.appendChild(selectBTNS);
 
@@ -819,12 +855,77 @@ async function renderMenuList(container){
 
       // Add to table btn
       const btnAddToTable = document.createElement("button");
-      classes = ["text-primaryBg", "bg-primaryColor", "p-[.3rem]", "cursor-pointer", "rounded-md", "hover:bg-secondaryBg", "hover:text-primaryColor"];
+      classes = ["text-primaryBg", "bg-primaryColor/50", "p-[.3rem]", "cursor-not-allowed", "rounded-md"];
       btnAddToTable.classList.add(...classes);
       btnAddToTable.textContent = "Add to table";
+      btnAddToTable.disabled = true;
       btnAddToTable.addEventListener("click", () => {
         // Add validation that there should be a selected table. + Confirmation that we are going to add it on that table
         // The validation should come from backend
+
+        console.log(typeof(btnAddToTable.getAttribute("order-type")));
+        if(btnAddToTable.getAttribute("order-type") === "1"){ // DINE IN
+          console.log("Should be added to table")
+        }else if(btnAddToTable.getAttribute("order-type") === "2"){ // TAKE OUT
+          console.log("Should proceed to payment")
+        }
+      });
+
+      selectBOTS.addEventListener("change", (event) => {
+        const selected = event.target.value;
+        if(selected == "2"){
+          selectBTNS.disabled = true;
+          selectBTNS.selectedIndex = 0;
+          selectBTNS.options[0].textContent = "N/A";
+          selectBTNS.options[0].value = "N/A";
+
+          // Proceed to payment logic - TAKE OUT
+          btnAddToTable.textContent = "Prooced to payment";
+          btnAddToTable.setAttribute("order-type", "2");
+          btnAddToTable.disabled = false;
+          classes = ["bg-primaryColor/50", "cursor-not-allowed"]
+          btnAddToTable.classList.remove(...classes);
+          classes = ["bg-primaryColor", "cursor-pointer", "hover:bg-secondaryBg", "hover:text-primaryColor"]
+          btnAddToTable.classList.add(...classes);
+        }else{
+          selectBTNS.disabled = false;
+          selectBTNS.options[0].textContent = "Table Option";
+          selectBTNS.options[0].value = "";
+          
+          // Add to table logic - DINE IN
+          btnAddToTable.textContent = "Add to table";
+          btnAddToTable.setAttribute("order-type", "1");
+          
+          if(selectBOTS.selectedIndex > 0 && selectBTNS.selectedIndex > 0){ // Allows submission
+            btnAddToTable.disabled = false;
+            classes = ["bg-primaryColor/50", "cursor-not-allowed"]
+            btnAddToTable.classList.remove(...classes);
+            classes = ["bg-primaryColor", "cursor-pointer", "hover:bg-secondaryBg", "hover:text-primaryColor"]
+            btnAddToTable.classList.add(...classes);
+          }else{
+            btnAddToTable.disabled = true;
+            classes = ["bg-primaryColor", "cursor-pointer", "hover:bg-secondaryBg", "hover:text-primaryColor"]
+            btnAddToTable.classList.remove(...classes);
+            classes = ["bg-primaryColor/50", "cursor-not-allowed"]
+            btnAddToTable.classList.add(...classes);
+          }
+        }
+      });
+
+      selectBTNS.addEventListener("change", (event) => {
+        if(selectBOTS.selectedIndex > 0 && selectBTNS.selectedIndex > 0){ // Allows submission
+          btnAddToTable.disabled = false;
+          classes = ["bg-primaryColor/50", "cursor-not-allowed"]
+          btnAddToTable.classList.remove(...classes);
+          classes = ["bg-primaryColor", "cursor-pointer", "hover:bg-secondaryBg", "hover:text-primaryColor"]
+          btnAddToTable.classList.add(...classes);
+        }else{
+          btnAddToTable.disabled = true;
+          classes = ["bg-primaryColor", "cursor-pointer", "hover:bg-secondaryBg", "hover:text-primaryColor"]
+          btnAddToTable.classList.remove(...classes);
+          classes = ["bg-primaryColor/50", "cursor-not-allowed"]
+          btnAddToTable.classList.add(...classes);
+        }
       });
 
       divSCChildBottom.appendChild(divBTD);
@@ -936,7 +1037,6 @@ async function renderMenuList(container){
       divMDTSFCCntr.appendChild(spanFDMDTS);
       divMDTSFCCntr.appendChild(spanCMDTS);
 
-      console.log(element);
       // Size Display
       const spanSMDTS = document.createElement("span");
       classes = ["text-[.7rem]", "text-secondaryColor", "font-medium", "leading-none", "whitespace-pre"];
@@ -1008,14 +1108,53 @@ async function renderMenuList(container){
       }else{
         const btnATC = document.getElementById(`${element.foodId}-ATC`);
         const btnAM = document.getElementById(`${element.foodId}-AM`);
-        btnATC.classList.remove("flex");
-        btnATC.classList.add("hidden");
-        btnAM.classList.add("flex");
-        btnAM.classList.remove("hidden");
-        btnAM.textContent = `Add more (${element.quantity})`;
-      }
 
+        if(btnATC != null && btnAM != null){
+          btnATC.classList.remove("flex");
+          btnATC.classList.add("hidden");
+          btnAM.classList.add("flex");
+          btnAM.classList.remove("hidden");
+          btnAM.textContent = `Add more (${element.quantity})`;
+        }
+      }
     });
+
+    UpdateTotalDetails();
+  }
+
+  async function UpdateTotalDetails(addedPrice){
+    // Add the logic on dynamically changing the prices.
+    const stp = document.getElementById("sub-total-price");
+    const tp = document.getElementById("taxes-price");
+    const dp = document.getElementById("discount-price");
+    const tpp = document.getElementById("total-payment-price");
+
+    const taxPercentage = localStorage.getItem("tax-percent");
+
+    const orderAmt = await orderService.getOrderSum();
+
+    // Tax
+    let taxAmt = 0;
+    if(!isNaN(taxPercentage)){
+      taxAmt = (orderAmt / (taxPercentage / 100 + 1)) * (taxPercentage / 100);
+    }
+
+    let formattedPhpAmt = "";
+    formattedPhpAmt = new Intl.NumberFormat("en-PH", {
+          style: "currency",
+          currency: "PHP"
+        }).format(orderAmt - taxAmt);
+    stp.textContent = formattedPhpAmt;
+    formattedPhpAmt = new Intl.NumberFormat("en-PH", {
+        style: "currency",
+        currency: "PHP"
+      }).format(taxAmt);
+      tp.textContent = formattedPhpAmt;
+      formattedPhpAmt = new Intl.NumberFormat("en-PH", {
+          style: "currency",
+          currency: "PHP"
+        }).format(orderAmt);
+    tpp.textContent = formattedPhpAmt;
   }
 }
 
