@@ -2,8 +2,13 @@ import { updateTime } from './pos/datefunction.js';
 
 const basePath = import.meta.env.VITE_ROOT_PROJECT_PATH;
 
-// First entry point
-navigate("menu-list");
+// Entry point
+const currTab = sessionStorage.getItem("active-tab");
+if(currTab === "menu")
+  navigate("menu-list");
+else if (currTab === "table")
+  navigate("manage-table");
+
 initNavOnClick();
 
 updateTime();
