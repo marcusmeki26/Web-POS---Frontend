@@ -18,7 +18,7 @@ export const orderService = {
     return response.data;
   },
   getOrderByTableId: async (tableId) => {
-    const response = await api.get(`/v1/order/${tableId}`);
+    const response = await api.get(`/v1/order?table${tableId}`);
     return response.data;
   },
   getCurrentReceiptNo: async () => {
