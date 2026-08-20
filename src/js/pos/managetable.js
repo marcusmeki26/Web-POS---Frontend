@@ -3,6 +3,7 @@ import { orderService } from "../services/orderservice";
 
 // The table list view should have filter for the number of seats. >= No. of seats is the filter :REMOVE-COMMENT 
 // We should also add `available` tables as filter :REMOVE-COMMENT
+// Order List is not working properly probably backend problem since it is returning the whole count :REMOVE-COMMENT
 
 async function renderManageTable(container){
   sessionStorage.setItem("active-tab", "table");
