@@ -1,4 +1,8 @@
 import { tableListService } from "../services/tablelistservice";
+import { orderService } from "../services/orderservice";
+
+// The table list view should have filter for the number of seats. >= No. of seats is the filter :REMOVE-COMMENT 
+// We should also add `available` tables as filter :REMOVE-COMMENT
 
 async function renderManageTable(container){
   sessionStorage.setItem("active-tab", "table");
@@ -57,7 +61,7 @@ async function renderManageTable(container){
   //   }
   // }
 
-  function displayTableList(tableListOptions){
+  async function displayTableList(tableListOptions){
 
     if(section.children.length === 2){
       section.removeChild(section.children[1]);
@@ -73,7 +77,7 @@ async function renderManageTable(container){
       classes = ["flex", "flex-col", "gap-3", "h-max", "w-full"];
       divFC.classList.add(...classes);
 
-      tableListOptions.forEach(table => {
+      tableListOptions.forEach(async (table) => {
         const divTableCntr = document.createElement("div");
         classes = [`CONTAINER-${table.id}`, "flex", "flex-col", "bg-primaryBg", "w-full", "p-3", "rounded-sm", "shadow-md", "text-primaryColor", "font-bold"];
         divTableCntr.classList.add(...classes);
@@ -94,35 +98,34 @@ async function renderManageTable(container){
         `;
 
         const svgCaretMoreRef = divTableCntrTS.querySelector(`svg`);
-        svgCaretMoreRef.addEventListener("click", () => {
-          const collapsibleContentRef = document.getElementById(`${table.id}-SVG-COLLAPSIBLE`);
-          
-          if(divCollapsibleContent.classList.contains("hidden")){
-            divCollapsibleContent.classList.add("flex");
-            divCollapsibleContent.classList.remove("hidden");
-            const paths = svgCaretMoreRef.querySelectorAll('path');
-            if (paths.length >= 2) {
-              paths[0].setAttribute("d", "M18 6C18 6 13.5811 11 12 11C10.4188 11 6 6 6 6");
-              paths[1].setAttribute("d", "M18 18C18 18 13.5811 13 12 13C10.4188 13 6 18 6 18");
-            }
-          }else{
-            divCollapsibleContent.classList.add("hidden");
-            divCollapsibleContent.classList.remove("flex");
+        svgCaretMoreRef.addEventListener("click", async () => {
+          if(divCollapsibleContent.classList.contains("active")){ // Collapsible hides
+            classes = ["border-b-1", "border-borderColor", "pb-[.3rem]"];
+            divTableCntrTS.classList.remove(...classes);
+            divCollapsibleContent.classList.remove("active");
             const paths = svgCaretMoreRef.querySelectorAll('path');
             if (paths.length >= 2) {
               paths[0].setAttribute("d", "M18 14C18 14 13.5811 19 12 19C10.4188 19 6 14 6 14");
               paths[1].setAttribute("d", "M18 9.99996C18 9.99996 13.5811 5.00001 12 5C10.4188 4.99999 6 10 6 10");
             }
+          }else{ // Collapsible shows
+            classes = ["border-b-1", "border-borderColor", "pb-[.3rem]"];
+            divTableCntrTS.classList.add(...classes);
+            divCollapsibleContent.classList.add("active");
+            const paths = svgCaretMoreRef.querySelectorAll('path');
+            const orderList = await orderService.getOrderByTableId(`${table.id}`);
+            populateCollapsibleContent(orderList, divCollapsibleContent);
+            if (paths.length >= 2) {
+              paths[0].setAttribute("d", "M18 5C18 5 13.5811 10 12 10C10.4188 10 6 5 6 5");
+              paths[1].setAttribute("d", "M18 19C18 19 13.5811 14 12 14C10.4188 14 6 19 6 19");
+            }
           }
         });
         
         const divCollapsibleContent = document.createElement("div");
-        classes = ["hidden", "relative"];
+        classes = ["collapsible-content", "pl-[.8rem]"];
         divCollapsibleContent.classList.add(...classes);
         divCollapsibleContent.id = `${table.id}-SVG-COLLAPSIBLE`;
-        const spanTest = document.createElement("span");
-        spanTest.textContent = "test";
-        divCollapsibleContent.appendChild(spanTest);
         
         divTableCntr.appendChild(divTableCntrTS);
         divTableCntr.appendChild(divCollapsibleContent);
@@ -131,6 +134,17 @@ async function renderManageTable(container){
       
       divSecondRow.appendChild(divFC);
       section.appendChild(divSecondRow);
+    }
+  }
+
+  function populateCollapsibleContent(orderList, collapSibleCntrRef){
+    if(orderList.length > 0){
+
+    }else{
+      collapSibleCntrRef.innerHTML = ""; // Resets to empty
+      const spanMessage = document.createElement("span");
+      spanMessage.textContent = "No order placed yet";
+      collapSibleCntrRef.appendChild(spanMessage);
     }
   }
 
