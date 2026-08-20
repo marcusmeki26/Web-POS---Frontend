@@ -103,6 +103,11 @@ async function renderManageTable(container){
             classes = ["border-b-1", "border-borderColor", "pb-[.3rem]"];
             divTableCntrTS.classList.remove(...classes);
             divCollapsibleContent.classList.remove("active");
+
+            const url = new URL(window.location.href);
+            const newUrl = url.origin + "/landingpage";
+            window.history.pushState({}, "", newUrl);
+            
             const paths = svgCaretMoreRef.querySelectorAll('path');
             if (paths.length >= 2) {
               paths[0].setAttribute("d", "M18 14C18 14 13.5811 19 12 19C10.4188 19 6 14 6 14");
@@ -114,6 +119,11 @@ async function renderManageTable(container){
             divCollapsibleContent.classList.add("active");
             const paths = svgCaretMoreRef.querySelectorAll('path');
             const orderList = await orderService.getOrderByTableId(`${table.id}`);
+
+            const url = new URL(window.location.href);
+            url.searchParams.set("table", table.id);
+            window.history.pushState({}, "", url);
+
             populateCollapsibleContent(orderList, divCollapsibleContent);
             if (paths.length >= 2) {
               paths[0].setAttribute("d", "M18 5C18 5 13.5811 10 12 10C10.4188 10 6 5 6 5");
