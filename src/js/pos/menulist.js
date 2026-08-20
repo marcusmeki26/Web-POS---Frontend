@@ -6,7 +6,6 @@ import { tableListService } from "../services/tablelistservice";
 
 // Proceed to Payment is the last process where it will send the whole transaction to the backend. There will be a popup of how much
 //  +the customer paid :REMOVE-COMMENT 
-// The table list view should have filter for the number of seats. >= No. of seats is the filter :REMOVE-COMMENT 
 
 async function renderMenuList(container){
   sessionStorage.setItem("active-tab", "menu");
@@ -721,7 +720,7 @@ async function renderMenuList(container){
       
       const spanRSTopSide = document.createElement("span");
       // Create get method to check what is the last receipt no userd
-      receiptNo = "R000001"
+      receiptNo = await orderService.getCurrentReceiptNo();
       spanRSTopSide.textContent = "#" + receiptNo;
 
       divSCChild.appendChild(spanLSTopSide);
@@ -824,6 +823,7 @@ async function renderMenuList(container){
       const spanBOTT = document.createElement("span");
       spanBOTT.textContent = "Order Type";
       const selectBOTS = document.createElement("select");
+      selectBOTS.id = "order-type";
       selectBOTS.add(new Option("Order Type", "", true, true));
       selectBOTS.options[0].disabled = true;
       selectBOTS.add(new Option("Dine-in", "1"));
@@ -838,6 +838,7 @@ async function renderMenuList(container){
       const spanBTNT = document.createElement("span");
       spanBTNT.textContent = "Select Table";
       const selectBTNS = document.createElement("select");
+      selectBTNS.id = "table-no";
       selectBTNS.add(new Option("Table Option", "", true, true));
       selectBTNS.options[0].disabled = true;
       const tableList = await tableListService.getTables();
@@ -859,13 +860,25 @@ async function renderMenuList(container){
       btnAddToTable.classList.add(...classes);
       btnAddToTable.textContent = "Add to table";
       btnAddToTable.disabled = true;
-      btnAddToTable.addEventListener("click", () => {
-        // Add validation that there should be a selected table. + Confirmation that we are going to add it on that table
-        // The validation should come from backend
-
-        console.log(typeof(btnAddToTable.getAttribute("order-type")));
+      btnAddToTable.addEventListener("click", async () => {
         if(btnAddToTable.getAttribute("order-type") === "1"){ // DINE IN
-          console.log("Should be added to table")
+          const lSelectBOTS = document.getElementById("order-type");
+          const lSelectBTNS = document.getElementById("table-no");
+          if(lSelectBOTS.selectedIndex != 0 && lSelectBTNS.selectedIndex != 0){ 
+            const patchRequest = {
+              tableNo: lSelectBTNS.selectedIndex,
+              placed: true
+            }
+
+            console.log(patchRequest.tableNo);
+            console.log(patchRequest.placed)
+
+            const response = await orderService.patchOrderByReceiptNo(receiptNo, patchRequest);
+            if(response.status === 200){
+              alert(`Order is placed on table ${patchRequest.tableNo}`);
+              window.location.reload();
+            }
+          }
         }else if(btnAddToTable.getAttribute("order-type") === "2"){ // TAKE OUT
           console.log("Should proceed to payment")
         }
@@ -940,7 +953,8 @@ async function renderMenuList(container){
       container.appendChild(section);
 
       // Checking if there are existing orders
-      const elementArr = await orderService.getOrders();
+      // const elementArr = await orderService.getOrders();
+      const elementArr = await orderService.getUnplacedOrders();
       if(elementArr.length > 0){
         displayActiveTrans(elementArr);
       }
