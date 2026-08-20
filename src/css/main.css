@@ -58,3 +58,46 @@ html {
 #menu-list-container button.active span{
   background-color: #2F5D8A;
 }
+
+.collapsible-content{
+  visibility: hidden;
+  opacity: 0;
+  max-height: 0;
+  transform: scale(0.9);
+  transition: 
+    opacity 0.1s ease, 
+    transform 0.4s ease, 
+    visibility 0.4s ease,
+    max-height 0.4s ease;
+}
+
+.collapsible-content.active{
+  visibility: visible;
+  opacity: 1;
+  max-height: fit-content;
+  transform: scale(1);
+}
+
+/* .box {
+  display: none;
+  opacity: 0;
+  transform: scale(0.9);
+          
+  transition: 
+    opacity 0.4s ease, 
+    transform 0.4s ease, 
+    display 0.4s ease allow-discrete;
+}
+
+.box.active {
+  display: flex;
+  opacity: 1;
+  transform: scale(1);
+}
+
+@starting-style {
+  .box.active {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+} */
