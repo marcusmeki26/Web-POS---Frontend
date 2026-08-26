@@ -29,7 +29,7 @@ function navigate(page){
   if(page === "menu-list"){
     import('./pos/menulist.js')
     .then(({ renderMenuList }) => {
-      // Code here
+      removeParams();
       const menuList = document.getElementById("menu-list");
       menuList.classList.add("active");
 
@@ -41,7 +41,7 @@ function navigate(page){
   }else if(page === "manage-table"){
     import('./pos/managetable.js')
     .then(({ renderManageTable }) => {
-      // Code here
+      removeParams();
       const manageTable = document.getElementById("manage-table");
       manageTable.classList.add("active");
 
@@ -70,4 +70,10 @@ function initNavOnClick(){
       }
     }
   }
+}
+
+function removeParams(){
+  const url = new URL(window.location.href);
+  const newUrl = url.origin + "/landingpage";
+  window.history.replaceState({}, "", newUrl);
 }
