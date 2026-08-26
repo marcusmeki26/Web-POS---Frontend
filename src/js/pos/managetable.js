@@ -3,7 +3,8 @@ import { orderService } from "../services/orderservice";
 
 // The table list view should have filter for the number of seats. >= No. of seats is the filter :REMOVE-COMMENT 
 // We should also add `available` tables as filter :REMOVE-COMMENT
-// Order List is not working properly probably backend problem since it is returning the whole count :REMOVE-COMMENT
+// UI Bug when there is no filtered no. of seats :REMOVE-COMMENT
+// `Return to menu` button should have a validation that if there are unplaced items it will not allow it. :REMOVE-COMMENT
 
 async function renderManageTable(container){
   sessionStorage.setItem("active-tab", "table");
@@ -63,7 +64,6 @@ async function renderManageTable(container){
   // }
 
   async function displayTableList(tableListOptions){
-
     if(section.children.length === 2){
       section.removeChild(section.children[1]);
     }
@@ -72,7 +72,7 @@ async function renderManageTable(container){
     classes = ["flex-16", "p-3", "flex", "gap-[.5rem]", "min-h-0", "w-full"];
     divSecondRow.classList.add(...classes);
     
-    if(tableListOptions.length > 0){
+    if(tableListOptions != null && tableListOptions.length > 0){
       // First Column
       const divFC = document.createElement("div");
       classes = ["flex", "flex-col", "gap-3", "h-max", "w-full"];
@@ -105,9 +105,7 @@ async function renderManageTable(container){
             divTableCntrTS.classList.remove(...classes);
             divCollapsibleContent.classList.remove("active");
 
-            const url = new URL(window.location.href);
-            const newUrl = url.origin + "/landingpage";
-            window.history.pushState({}, "", newUrl);
+            removeParams();
             
             const paths = svgCaretMoreRef.querySelectorAll('path');
             if (paths.length >= 2) {
@@ -150,7 +148,167 @@ async function renderManageTable(container){
 
   function populateCollapsibleContent(orderList, collapSibleCntrRef){
     if(orderList.length > 0){
+      collapSibleCntrRef.innerHTML = ""; // Resets to empty
 
+      const divOLCntr = document.createElement("div");
+      classes = ["flex", "flex-col", "mt-[.3rem]"];
+      divOLCntr.classList.add(...classes);
+
+      const receiptNo = orderList[0].receiptNo;
+      const h1ReceiptNo = document.createElement("h1");
+      classes = ["text-lg"];
+      h1ReceiptNo.classList.add(...classes);
+      h1ReceiptNo.textContent = `Receipt No: ${receiptNo}`;
+      divOLCntr.appendChild(h1ReceiptNo);
+      
+      let totalPrice = 0;
+      const tableOrderContentCntr = document.createElement("table");
+      classes = [];
+      tableOrderContentCntr.classList.add(...classes);
+
+      const theadOrderContentCntr = document.createElement("thead");
+      classes = ["border-t"];
+      theadOrderContentCntr.classList.add(...classes);
+      const trTheadCntr = document.createElement("tr");
+      // Description
+      const thTheadDescription = document.createElement("th");
+      classes = ["text-start"];
+      thTheadDescription.classList.add(...classes);
+      thTheadDescription.textContent = "Description";
+      trTheadCntr.appendChild(thTheadDescription);
+
+      // Size
+      const thTheadSize = document.createElement("th");
+      thTheadSize.classList.add(...classes);
+      thTheadSize.textContent = "Size";
+      trTheadCntr.appendChild(thTheadSize);
+
+      // Quantity
+      const thTheadQty = document.createElement("th");
+      thTheadQty.classList.add(...classes);
+      thTheadQty.textContent = "Quantity";
+      trTheadCntr.appendChild(thTheadQty);
+
+      // Price
+      const thTheadPrice = document.createElement("th");
+      thTheadPrice.classList.add(...classes);
+      thTheadPrice.textContent = "Price";
+      trTheadCntr.appendChild(thTheadPrice);
+
+      theadOrderContentCntr.appendChild(trTheadCntr);
+      tableOrderContentCntr.appendChild(theadOrderContentCntr);
+
+      const tbodyOrderContentCntr = document.createElement("tbody");
+      orderList.forEach(order => {
+        const trBodyCntr = document.createElement("tr");
+        classes = ["border-t", "font-light"];
+        trBodyCntr.classList.add(...classes);
+
+        // Description
+        const tdBodyDescription = document.createElement("td");
+        classes = ["w-[25%]"];
+        tdBodyDescription.classList.add(...classes);
+        tdBodyDescription.textContent = order.shortFoodDesc;
+        trBodyCntr.appendChild(tdBodyDescription);
+
+        // Size
+        const tdBodySize = document.createElement("td");
+        tdBodySize.classList.add(...classes);
+        tdBodySize.textContent = order.size;
+        trBodyCntr.appendChild(tdBodySize);
+
+        // Quantity
+        const tdBodyQuantity = document.createElement("td");
+        classes = ["w-[25%]", "text-center"]
+        tdBodyQuantity.classList.add(...classes);
+        tdBodyQuantity.textContent = order.quantity;
+        trBodyCntr.appendChild(tdBodyQuantity);
+
+        // Price
+        const tdBodyPrice = document.createElement("td");
+        tdBodyPrice.classList.add(...classes);
+        const formattedPrice = new Intl.NumberFormat("en-PH", {
+          style: "currency",
+          currency: "PHP"
+        }).format(order.price);
+        tdBodyPrice.textContent = formattedPrice;
+        trBodyCntr.appendChild(tdBodyPrice);
+
+        // Total Price
+        totalPrice += (order.price * order.quantity);
+
+        tbodyOrderContentCntr.appendChild(trBodyCntr);
+      });
+      const tfootTableOrderContentCntr = document.createElement("tfoot");
+      classes = ["border-t"];
+      tfootTableOrderContentCntr.classList.add(...classes);
+      const trFootCntr = document.createElement("tr");
+
+      // Description
+      const tdFootDescription = document.createElement("td");
+      classes = ["text-center"];
+      tdFootDescription.classList.add(...classes);
+      tdFootDescription.colSpan = 3;
+      tdFootDescription.textContent = "Total Price";
+      trFootCntr.appendChild(tdFootDescription);
+
+      // Total Price
+      const tdFootTotalPrice = document.createElement("td");
+      classes = ["text-center"];
+      const formattedTotalPrice = new Intl.NumberFormat("en-PH", {
+        style: "currency",
+        currency: "PHP"
+      }).format(totalPrice);
+      tdFootTotalPrice.textContent = formattedTotalPrice;
+      tdFootTotalPrice.classList.add(...classes);
+      trFootCntr.appendChild(tdFootTotalPrice);
+      tfootTableOrderContentCntr.appendChild(trFootCntr);
+
+      tableOrderContentCntr.appendChild(tbodyOrderContentCntr);
+      tableOrderContentCntr.appendChild(tfootTableOrderContentCntr);
+
+      const divBtnCntr = document.createElement("div");
+      classes = ["flex", "gap-[.3rem]", "w-fit"];
+      divBtnCntr.classList.add(...classes);
+
+      // Button (used for returning into menu list)
+      const btnReturnToMenuList = document.createElement("button");
+      classes = ["bg-primaryColor", "text-primaryBg", "font-bold", "rounded-md", "p-[.4rem]", "cursor-pointer", "hover:bg-secondaryBg", "hover:text-primaryColor"];
+      btnReturnToMenuList.classList.add(...classes);
+      btnReturnToMenuList.textContent = "Return to menu list";
+      btnReturnToMenuList.addEventListener("click", async () => {
+        // Unplaced should be set into false :REMOVE-COMMENT
+
+        console.log("Return to menu list");
+
+        const patchRequest = {
+          tableNo: null,
+          placed: false,
+          orderType: null
+        };
+
+        const response = await orderService.patchRetrieveOrderByReceiptNo(receiptNo, patchRequest);
+        if(response.status === 200){
+          alert(`Receipt No# ${receiptNo} was retrieved. Please check in menu list tab`);
+          window.location.reload();
+        }else{
+          alert("There was a problem updating the record. Please try again");
+        }
+      });
+      divBtnCntr.appendChild(btnReturnToMenuList);
+
+      // Checkout/Billout
+      const btnBillOut = document.createElement("button");
+      btnBillOut.classList.add(...classes);
+      btnBillOut.textContent = "Bill-out";
+      btnBillOut.addEventListener("click", () => {
+
+      });
+      divBtnCntr.appendChild(btnBillOut);
+
+      divOLCntr.appendChild(tableOrderContentCntr);
+      divOLCntr.appendChild(divBtnCntr);
+      collapSibleCntrRef.appendChild(divOLCntr);
     }else{
       collapSibleCntrRef.innerHTML = ""; // Resets to empty
       const spanMessage = document.createElement("span");
@@ -160,6 +318,13 @@ async function renderManageTable(container){
   }
 
   container.appendChild(section);
+
+  // Utilities
+  function removeParams(){
+    const url = new URL(window.location.href);
+    const newUrl = url.origin + "/landingpage";
+    window.history.replaceState({}, "", newUrl);
+  }
 }
 
 export { renderManageTable }; 
