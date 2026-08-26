@@ -3,9 +3,11 @@ import { foodService } from '../services/foodservice';
 import { orderService } from "../services/orderservice";
 import { taxService } from "../services/taxservice";
 import { tableListService } from "../services/tablelistservice";
+import { orderTypeService } from "../services/ordertypeservice";
 
 // Proceed to Payment is the last process where it will send the whole transaction to the backend. There will be a popup of how much
 //  +the customer paid :REMOVE-COMMENT 
+// Add delete functionality for each item. `Add to Cart` button is working, add to others :REMOVE-COMMENT
 
 async function renderMenuList(container){
   sessionStorage.setItem("active-tab", "menu");
@@ -401,6 +403,8 @@ async function renderMenuList(container){
                         btnAMV.classList.add("flex");
                         btnAMV.classList.remove("hidden");
                         btnAMV.textContent = `Add more (${selectedCtr})`;
+
+                        addEventsOnEditAndDeleteSvg(divMDRSBSCntr, orderData);
                       }
                     }
                   });
@@ -572,13 +576,13 @@ async function renderMenuList(container){
                 // Add edit & delete SVG
                 divMDRSBSCntr.innerHTML = 
                 `
-                  <svg width="12" height="12" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg id="edit-order" width="12" height="12" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M25.3342 6.99391C26.6756 5.54064 27.3463 4.81402 28.0589 4.39017C29.7784 3.36747 31.8959 3.33566 33.6443 4.30627C34.3688 4.70854 35.06 5.41471 36.4426 6.82707C37.8251 8.23942 38.5165 8.94559 38.9102 9.68577C39.8604 11.4717 39.8293 13.6347 38.8281 15.3914C38.4132 16.1194 37.7018 16.8045 36.2793 18.1747L19.3526 34.4778C16.6567 37.0745 15.3088 38.3729 13.6241 39.0308C11.9394 39.6888 10.0873 39.6404 6.38321 39.5436L5.87925 39.5304C4.7516 39.5009 4.18777 39.4862 3.86003 39.1141C3.53226 38.7422 3.57701 38.1678 3.66651 37.0193L3.71511 36.3956C3.96698 33.1624 4.09291 31.546 4.72424 30.0929C5.35556 28.6397 6.44456 27.46 8.62254 25.1002L25.3342 6.99391Z" stroke="#161616" stroke-width="2.7" stroke-linejoin="round"/>
                     <path d="M23.3984 7.19995L35.9984 19.8" stroke="#161616" stroke-width="2.7" stroke-linejoin="round"/>
                     <path d="M25.1992 39.6001H39.5992" stroke="#161616" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
   
-                  <svg width="12" height="12" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg id="delete-order" width="12" height="12" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M35.1016 9.90002L33.9861 27.9452C33.701 32.5555 33.5586 34.8608 32.403 36.5182C31.8315 37.3376 31.096 38.0292 30.2428 38.5488C28.5173 39.6 26.2078 39.6 21.5884 39.6C16.9632 39.6 14.6505 39.6 12.9239 38.5468C12.0702 38.0263 11.3344 37.3335 10.7632 36.5127C9.60795 34.8527 9.46857 32.5442 9.18986 27.9274L8.10156 9.90002" stroke="#161616" stroke-width="2.7" stroke-linecap="round"/>
                     <path d="M5.39844 9.89998H37.7984M28.8987 9.89998L27.67 7.36509C26.8537 5.68124 26.4455 4.83931 25.7415 4.31423C25.5854 4.19776 25.42 4.09415 25.247 4.00444C24.4675 3.59998 23.5318 3.59998 21.6605 3.59998C19.7423 3.59998 18.7832 3.59998 17.9907 4.02139C17.815 4.11479 17.6474 4.2226 17.4896 4.34368C16.7774 4.89004 16.3796 5.76277 15.5839 7.50824L14.4937 9.89998" stroke="#161616" stroke-width="2.7" stroke-linecap="round"/>
                     <path d="M17.1016 29.7V18.9" stroke="#161616" stroke-width="2.7" stroke-linecap="round"/>
@@ -622,6 +626,9 @@ async function renderMenuList(container){
                   btnAM.classList.add("flex");
                   btnAM.classList.remove("hidden");
                   btnAM.textContent = `Add more (${selectedCtr})`;
+
+                  // Move to a function and pass divMDRSBSCntr & element
+                  addEventsOnEditAndDeleteSvg(divMDRSBSCntr, orderData);
                 }
               }
             });
@@ -826,8 +833,12 @@ async function renderMenuList(container){
       selectBOTS.id = "order-type";
       selectBOTS.add(new Option("Order Type", "", true, true));
       selectBOTS.options[0].disabled = true;
-      selectBOTS.add(new Option("Dine-in", "1"));
-      selectBOTS.add(new Option("Take out", "2"));
+      const orderTypes = await orderTypeService.getOrderTypes();
+      orderTypes.forEach(orderType => {
+        selectBOTS.add(new Option(orderType.orderDesc, orderType.id));
+      });
+      // selectBOTS.add(new Option("Dine-in", "1"));
+      // selectBOTS.add(new Option("Take out", "2"));
       divBOT.appendChild(spanBOTT);
       divBOT.appendChild(selectBOTS);
       
@@ -865,18 +876,25 @@ async function renderMenuList(container){
           const lSelectBOTS = document.getElementById("order-type");
           const lSelectBTNS = document.getElementById("table-no");
           if(lSelectBOTS.selectedIndex != 0 && lSelectBTNS.selectedIndex != 0){ 
-            const patchRequest = {
-              tableNo: lSelectBTNS.selectedIndex,
-              placed: true
+            // Checking if table already has menu
+            const isTableAvailable = await orderService.getOrderByTableId(lSelectBTNS.selectedIndex);
+            if(isTableAvailable.length > 0) {
+              alert("You cannot add order here. There is an existing transaction on this table");
+              return;
             }
 
-            console.log(patchRequest.tableNo);
-            console.log(patchRequest.placed)
+            const patchRequest = {
+              tableNo: lSelectBTNS.selectedIndex,
+              placed: true,
+              orderType: lSelectBOTS.selectedIndex
+            }
 
             const response = await orderService.patchOrderByReceiptNo(receiptNo, patchRequest);
             if(response.status === 200){
               alert(`Order is placed on table ${patchRequest.tableNo}`);
               window.location.reload();
+            }else{
+              alert("There was a problem updating the record. Please try again");
             }
           }
         }else if(btnAddToTable.getAttribute("order-type") === "2"){ // TAKE OUT
@@ -1000,6 +1018,8 @@ async function renderMenuList(container){
     // Main Mid Container
     const SCMidCntr = document.getElementById("second-column-mid");
     // SCMidCntr.classList.add(...classes);
+
+    // const tableId = elementArr[0];
 
     elementArr.forEach(element => {
       // Child Container
@@ -1129,6 +1149,8 @@ async function renderMenuList(container){
           btnAM.classList.add("flex");
           btnAM.classList.remove("hidden");
           btnAM.textContent = `Add more (${element.quantity})`;
+          
+          addEventsOnEditAndDeleteSvg(divMDRSBSCntr, element);
         }
       }
     });
@@ -1136,7 +1158,7 @@ async function renderMenuList(container){
     UpdateTotalDetails();
   }
 
-  async function UpdateTotalDetails(addedPrice){
+  async function UpdateTotalDetails(){
     // Add the logic on dynamically changing the prices.
     const stp = document.getElementById("sub-total-price");
     const tp = document.getElementById("taxes-price");
@@ -1145,7 +1167,7 @@ async function renderMenuList(container){
 
     const taxPercentage = localStorage.getItem("tax-percent");
 
-    const orderAmt = await orderService.getOrderSum();
+    const orderAmt = await orderService.getOrderSumUnplaced();
 
     // Tax
     let taxAmt = 0;
@@ -1169,6 +1191,67 @@ async function renderMenuList(container){
           currency: "PHP"
         }).format(orderAmt);
     tpp.textContent = formattedPhpAmt;
+  }
+
+  function addEventsOnEditAndDeleteSvg(svgCntrRef, element){
+    const deleteSvgRef = svgCntrRef.children[1];
+    classes = ["cursor-pointer"];
+    deleteSvgRef.classList.add(...classes);
+    deleteSvgRef.addEventListener("click", () => {
+      // Delete by receipt no & food id
+      const body = document.getElementById("body");
+
+      const divModalDelete = document.createElement("div");
+      classes = ["flex", "justify-center", "items-center", "absolute", "w-full", "h-full", "bg-secondaryBg/50", "text-primaryColor", "z-[3]"];
+      divModalDelete.classList.add(...classes);
+
+      const divModalChildDeleteCntr = document.createElement("div");
+      classes = ["flex", "gap-[.6rem]", "flex-col", "bg-primaryBg", "p-3", "rounded-md", "w-[50%]"];
+      divModalChildDeleteCntr.classList.add(...classes);
+
+      const spanCaption = document.createElement("span");
+      classes = ["font-bold", "text-[1.2rem]", "border-b", "border-borderColor"];
+      spanCaption.classList.add(...classes);
+      spanCaption.textContent = `Are you sure you want to delete ${element.shortFoodDesc}?`;
+      divModalChildDeleteCntr.appendChild(spanCaption);
+
+      const divModalBtnCntr = document.createElement("div");
+      classes = ["flex", "gap-[.3rem]", "w-[25%]"];
+      divModalBtnCntr.classList.add(...classes);
+
+      const btnYes = document.createElement("button");
+      classes = ["p-2", "rounded-md", "bg-sucessConfirm", "cursor-pointer", "text-primaryBg", "w-full", "hover:bg-sucessConfirm/50"];
+      btnYes.classList.add(...classes);
+      btnYes.textContent = "Yes";
+      divModalBtnCntr.appendChild(btnYes);
+      btnYes.addEventListener("click",async () => {
+        const deleteRequest = {
+          receiptNo: element.receiptNo,
+          foodId: element.foodId
+        };
+
+        const response = await orderService.deleteOrder(deleteRequest);
+        if(response.status === 200){
+          window.location.reload();
+          alert(`${element.shortFoodDesc} was successfully removed.`);
+        }else{
+          alert("There was a problem removing order. Please try again");
+        }
+      });
+      
+      const btnNo = document.createElement("button");
+      classes = ["p-2", "rounded-md", "bg-errorAlert", "cursor-pointer", "text-primaryBg", "w-full", "hover:bg-errorAlert/50"];
+      btnNo.classList.add(...classes);
+      btnNo.textContent = "No";
+      divModalBtnCntr.appendChild(btnNo);
+      btnNo.addEventListener("click", () => {
+        body.removeChild(divModalDelete);
+      });
+      
+      divModalChildDeleteCntr.appendChild(divModalBtnCntr);
+      divModalDelete.appendChild(divModalChildDeleteCntr);
+      body.appendChild(divModalDelete);
+    });
   }
 }
 
