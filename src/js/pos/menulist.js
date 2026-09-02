@@ -7,7 +7,6 @@ import { orderTypeService } from "../services/ordertypeservice";
 
 // Proceed to Payment is the last process where it will send the whole transaction to the backend. There will be a popup of how much
 //  +the customer paid :REMOVE-COMMENT 
-// Add delete functionality for each item. `Add to Cart` button is working, add to others :REMOVE-COMMENT
 
 async function renderMenuList(container){
   sessionStorage.setItem("active-tab", "menu");
@@ -726,6 +725,7 @@ async function renderMenuList(container){
       spanLSTopSide.textContent = "Order Summary";
       
       const spanRSTopSide = document.createElement("span");
+      spanRSTopSide.id = "receipt-no-value";
       // Create get method to check what is the last receipt no userd
       receiptNo = await orderService.getCurrentReceiptNo();
       spanRSTopSide.textContent = "#" + receiptNo;
@@ -876,22 +876,41 @@ async function renderMenuList(container){
           const lSelectBOTS = document.getElementById("order-type");
           const lSelectBTNS = document.getElementById("table-no");
           if(lSelectBOTS.selectedIndex != 0 && lSelectBTNS.selectedIndex != 0){ 
-            // Checking if table already has menu
+            // Checking if table already has menu (I think it is better that the cashier can add a new order even if there are still menu on a table)
+            let response, patchRequest;
             const isTableAvailable = await orderService.getOrderByTableId(lSelectBTNS.selectedIndex);
-            if(isTableAvailable.length > 0) {
-              alert("You cannot add order here. There is an existing transaction on this table");
-              return;
+            if(isTableAvailable.length > 0) { // If existing request
+              // alert("You cannot add order here. There is an existing transaction on this table");
+              // return; 
+              
+              const currentOrders = await orderService.getUnplacedOrders();
+              
+              let orders = [];
+              currentOrders.forEach(order => {
+                console.log(order);
+                orders.push({
+                  id: order.id,
+                  foodId: order.foodId,
+                  quantity: order.quantity,
+                  sizeId: order.sizeId,
+                  tableNo: lSelectBTNS.selectedIndex
+                });
+              });
+
+              response = await orderService.patchOrdersByReceiptNo(receiptNo, orders);
+            }else{ // If not existing request
+              patchRequest = {
+                tableNo: lSelectBTNS.selectedIndex,
+                placed: true,
+                orderType: lSelectBOTS.selectedIndex
+              }
+
+              response = await orderService.patchOrderByReceiptNo(receiptNo, patchRequest);
             }
 
-            const patchRequest = {
-              tableNo: lSelectBTNS.selectedIndex,
-              placed: true,
-              orderType: lSelectBOTS.selectedIndex
-            }
-
-            const response = await orderService.patchOrderByReceiptNo(receiptNo, patchRequest);
+            
             if(response.status === 200){
-              alert(`Order is placed on table ${patchRequest.tableNo}`);
+              alert(`Order is placed on table ${lSelectBTNS.selectedIndex}`);
               window.location.reload();
             }else{
               alert("There was a problem updating the record. Please try again");
@@ -902,7 +921,7 @@ async function renderMenuList(container){
         }
       });
 
-      selectBOTS.addEventListener("change", (event) => {
+      selectBOTS.addEventListener("change", async (event) => {
         const selected = event.target.value;
         if(selected == "2"){
           selectBTNS.disabled = true;
@@ -928,6 +947,11 @@ async function renderMenuList(container){
           btnAddToTable.setAttribute("order-type", "1");
           
           if(selectBOTS.selectedIndex > 0 && selectBTNS.selectedIndex > 0){ // Allows submission
+
+            const isEmpty = await CheckIfTableHasExistingOrder(); 
+            if(isEmpty != "")
+              receiptNo = isEmpty;
+
             btnAddToTable.disabled = false;
             classes = ["bg-primaryColor/50", "cursor-not-allowed"]
             btnAddToTable.classList.remove(...classes);
@@ -943,8 +967,13 @@ async function renderMenuList(container){
         }
       });
 
-      selectBTNS.addEventListener("change", (event) => {
+      selectBTNS.addEventListener("change", async (event) => {
         if(selectBOTS.selectedIndex > 0 && selectBTNS.selectedIndex > 0){ // Allows submission
+
+          const isEmpty = await CheckIfTableHasExistingOrder();
+          if(isEmpty != "")
+            receiptNo = isEmpty;
+
           btnAddToTable.disabled = false;
           classes = ["bg-primaryColor/50", "cursor-not-allowed"]
           btnAddToTable.classList.remove(...classes);
@@ -1252,6 +1281,24 @@ async function renderMenuList(container){
       divModalDelete.appendChild(divModalChildDeleteCntr);
       body.appendChild(divModalDelete);
     });
+  }
+
+  async function CheckIfTableHasExistingOrder(){
+    // Checks if there is an existing order on the table & changes the receipt no.
+    const lSelectBTNS = document.getElementById("table-no");
+    const existingOrderByTableId = await orderService.getOrderByTableId(lSelectBTNS.selectedIndex);
+    if(existingOrderByTableId.length > 0) {
+      const orderList = existingOrderByTableId[0];
+
+      const receiptNoRef = document.getElementById("receipt-no-value");
+      receiptNoRef.textContent = "#" + orderList.receiptNo;
+
+      alert(`Receipt No. is changed. There is an existing transcation on the table selected`);
+
+      return orderList.receiptNo;
+    }
+    
+    return "";
   }
 }
 
