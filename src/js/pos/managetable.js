@@ -4,7 +4,6 @@ import { orderService } from "../services/orderservice";
 // The table list view should have filter for the number of seats. >= No. of seats is the filter :REMOVE-COMMENT 
 // We should also add `available` tables as filter :REMOVE-COMMENT
 // UI Bug when there is no filtered no. of seats :REMOVE-COMMENT
-// `Return to menu` button should have a validation that if there are unplaced items it will not allow it. :REMOVE-COMMENT
 
 async function renderManageTable(container){
   sessionStorage.setItem("active-tab", "table");
@@ -277,9 +276,12 @@ async function renderManageTable(container){
       btnReturnToMenuList.classList.add(...classes);
       btnReturnToMenuList.textContent = "Return to menu list";
       btnReturnToMenuList.addEventListener("click", async () => {
-        // Unplaced should be set into false :REMOVE-COMMENT
-
-        console.log("Return to menu list");
+        // Checking if there are still unplaced menu.
+        const exitingOrder = await orderService.getUnplacedOrders();
+        if(exitingOrder.length > 0){
+          alert("There are unplaced orders on the menu list. Please complete it first.");
+          return;
+        }
 
         const patchRequest = {
           tableNo: null,
