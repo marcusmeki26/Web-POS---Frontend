@@ -20,6 +20,8 @@
   --color-errorAlert: #E74C3C;
   --color-borderColor: #E4E7EC;
   --color-whiteText: #FFF;
+  --color-black: #000;
+  --color-white: #FFF;
 }
 
 html {
