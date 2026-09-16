@@ -5,12 +5,16 @@ export const orderService = {
     const response = await api.post("/v1/order", orderData);
     return response;
   },
+  postPaymentLine: async (paymentData) => { // Returns -> boolean
+    const reponse = await api.post("/v1/order/payment", paymentData);
+    return reponse.data;
+  },
   getOrders: async () => { // Returns -> list of orders
     const response = await api.get("/v1/order");
     return response.data;
   },
-  getOrderByFoodId: async (foodId) => { // Returns -> single order
-    const response = await api.get(`/v1/order/${foodId}`);
+  getOrderByNumber: async (number) => { // Returns -> single order
+    const response = await api.get(`/v1/order/${number}`);
     return response.data;
   },
   getOrderSumUnplaced: async () => { // Returns -> sum of unplaced order
