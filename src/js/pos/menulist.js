@@ -7,8 +7,13 @@ import { orderTypeService } from "../services/ordertypeservice";
 
 // Proceed to Payment is the last process where it will send the whole transaction to the backend. There will be a popup of how much
 //  +the customer paid :REMOVE-COMMENT 
+// Make amount formatted as global access since we can reuse it :REMOVE-COMMENT
 
 async function renderMenuList(container){
+  const formatAmount = new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP"
+  });
   sessionStorage.setItem("active-tab", "menu");
 
   // Set tax percentage on local storage
@@ -145,6 +150,8 @@ async function renderMenuList(container){
       divFC.classList.add(...classes);
 
       menuList.forEach(element => {
+        let discountAmt = 0; // No functionality yet :REMOVE-COMMENT 
+
         // Initialization
         const inventory = element.inventory;
 
@@ -185,14 +192,8 @@ async function renderMenuList(container){
         
         if(!element.withVariant){
           const price = element.price;
-
-          const formattedPrice = new Intl.NumberFormat("en-PH", {
-            style: "currency",
-            currency: "PHP"
-          }).format(price);
-
           const spanPrice = document.createElement("span");
-          spanPrice.textContent = formattedPrice;  
+          spanPrice.textContent = formatAmount.format(price);  
           divNameNPriceCntr.appendChild(spanPrice);
         }
 
@@ -245,20 +246,16 @@ async function renderMenuList(container){
                 divVariantPriceCntr.classList.add(...classes);
                 const spanProdVariant = document.createElement("span");
                 spanProdVariant.textContent = sizeName;
-                const prodVariantPrice = new Intl.NumberFormat("en-PH", {
-                  style: "currency",
-                  currency: "PHP"
-                }).format(sizePrice);
                 const spanProdVariantPrice = document.createElement("span");
-                spanProdVariantPrice.textContent = prodVariantPrice;
+                spanProdVariantPrice.textContent = formatAmount.format(sizePrice);
 
                 // Check if existing on item line
-                const order = await orderService.getOrderByFoodId(element.id);
+                const order = await orderService.getOrderByNumber(element.id);
 
                 let isExisting = false;   
                 let currQty = 0;
                 for(const item of order){
-                  if(item.foodId === element.id && item.sizeId === sizeId){
+                  if(item.number === element.id && item.sizeId === sizeId){
                     isExisting = true;
                     currQty = item.quantity;
                     break;
@@ -281,7 +278,7 @@ async function renderMenuList(container){
                     const divMenuDisplay = document.createElement("div");
                     classes = ["flex", "border", "max-h-[4.15rem]", "border-borderColor", "p-[.5rem]", "gap-[.3rem]", "text-primaryColor", "font-semibold", "rounded-md"];
                     divMenuDisplay.classList.add(...classes);
-                    divMenuDisplay.id = `${element.foodId}-MD`;
+                    divMenuDisplay.id = `${element.number}-MD`;
       
                     // Image
                     const imgMD = document.createElement("img"); 
@@ -376,11 +373,14 @@ async function renderMenuList(container){
   
                     const orderData = {
                       receiptNo: receiptNo,
-                      foodId: element.id,
+                      number: element.id,
                       shortFoodDesc: element.shortFoodDesc,
                       price: sizePrice,
                       sizeId: sizeId,
                       size: sizeName,
+                      discountPercent: 0,
+                      discountAmount: discountAmt,
+                      entryType: "ORDER",
                       quantity: selectedCtr,
                       placed: false,
                       tableId: null
@@ -422,16 +422,16 @@ async function renderMenuList(container){
                 }
 
                 btnAMVariant.addEventListener("click", async () => {
-                  const order = await orderService.getOrderByFoodId(element.id);
+                  const order = await orderService.getOrderByNumber(element.id);
 
                   if(order != null || order != "" || order.length > 0){
                     let index = 0;
                     for(const item of order){
                       if(item.sizeId === null){
-                        if(item.foodId === element.id)
+                        if(item.number === element.id)
                           break;
                       }else{
-                        if(item.foodId === element.id && item.sizeId === sizeId)
+                        if(item.number === element.id && item.sizeId === sizeId)
                           break;
                       } 
                       index++;
@@ -451,11 +451,7 @@ async function renderMenuList(container){
                     if(response.status === 200){
                       btnAMVariant.textContent = `Add more (${qtyCtr})`;
                       spanCMDTS.textContent = `(${qtyCtr})`;
-                      const formattedAmt = new Intl.NumberFormat("en-PH", {
-                        style: "currency",
-                        currency: "PHP"
-                      }).format(sizePrice * qtyCtr);
-                      spanMDLSBS.textContent = formattedAmt;
+                      spanMDLSBS.textContent = formatAmount.format(sizePrice * qtyCtr);
                     }
 
                     UpdateTotalDetails();
@@ -489,7 +485,7 @@ async function renderMenuList(container){
             
             btnATC.addEventListener("click", async () => {
               // Checks if it is existing
-              const orderList = await orderService.getOrderByFoodId(element.id);
+              const orderList = await orderService.getOrderByNumber(element.id);
               
               if(orderList === null || orderList === "" || orderList.length === 0){
                 // Main Mid Container
@@ -500,7 +496,7 @@ async function renderMenuList(container){
                 const divMenuDisplay = document.createElement("div");
                 classes = ["flex", "border", "max-h-[4.15rem]", "border-borderColor", "p-[.5rem]", "gap-[.3rem]", "text-primaryColor", "font-semibold", "rounded-md"];
                 divMenuDisplay.classList.add(...classes);
-                divMenuDisplay.id = `${element.foodId}-MD`;
+                divMenuDisplay.id = `${element.number}-MD`;
   
                 // Image
                 const imgMD = document.createElement("img"); 
@@ -561,11 +557,7 @@ async function renderMenuList(container){
                 classes = ["leading-none"];
                 spanMDLSBS.classList.add(...classes);
                 spanMDLSBS.id = `${element.id}-MDPRICE`;
-                const formattedPrice = new Intl.NumberFormat("en-PH", {
-                  style: "currency",
-                  currency: "PHP"
-                }).format(element.price);
-                spanMDLSBS.textContent = formattedPrice;
+                spanMDLSBS.textContent = formatAmount.format(element.price);
                 
                 // SVG Container
                 const divMDRSBSCntr = document.createElement("div");
@@ -600,11 +592,14 @@ async function renderMenuList(container){
                 // Create JSON Object
                 const orderData = {
                   receiptNo: receiptNo,
-                  foodId: element.id,
+                  number: element.id,
                   shortFoodDesc: element.shortFoodDesc,
                   price: element.price,
+                  discountAmount: discountAmt,
                   sizeId: null,
                   size: "None",
+                  discountPercent: 0,
+                  entryType: "ORDER",
                   quantity: selectedCtr,
                   placed: false,
                   tableId: null
@@ -618,8 +613,8 @@ async function renderMenuList(container){
 
                   UpdateTotalDetails((orderData.price * orderData.quantity));
 
-                  const btnATC = document.getElementById(`${orderData.foodId}-ATC`);
-                  const btnAM = document.getElementById(`${orderData.foodId}-AM`);
+                  const btnATC = document.getElementById(`${orderData.number}-ATC`);
+                  const btnAM = document.getElementById(`${orderData.number}-AM`);
                   btnATC.classList.remove("flex");
                   btnATC.classList.add("hidden");
                   btnAM.classList.add("flex");
@@ -656,17 +651,17 @@ async function renderMenuList(container){
         btnAM.classList.add(...classes);
 
         btnAM.addEventListener("click", async () => {
-          const order = await orderService.getOrderByFoodId(element.id);
+          const order = await orderService.getOrderByNumber(element.id);
 
           if(order != null || order != "" || order.length > 0){
             // Locates which index
             let index = 0;
             for(const item of order){
               if(item.sizeId === null){
-                if(item.foodId === element.id)
+                if(item.number === element.id)
                   break;
               }else{
-                if(item.foodId === element.id && item.sizeId === element.inventory.productVariant.size.id)
+                if(item.number === element.id && item.sizeId === element.inventory.productVariant.size.id)
                   break;
               } 
               index++;
@@ -686,11 +681,7 @@ async function renderMenuList(container){
             if(response.status === 200){
               btnAM.textContent = `Add more (${qtyCtr})`;
               spanCMDTS.textContent = `(${qtyCtr})`;
-              const formattedAmt = new Intl.NumberFormat("en-PH", {
-                style: "currency",
-                currency: "PHP"
-              }).format(element.price * qtyCtr);
-              spanMDLSBS.textContent = formattedAmt;
+              spanMDLSBS.textContent = formatAmount.format(element.price * qtyCtr);
             }
 
             await UpdateTotalDetails(element.price);
@@ -747,12 +738,6 @@ async function renderMenuList(container){
       classes = ["flex", "flex-col", "gap-[.5rem]", "text-sm", "text-primaryColor", "font-semibold", "p-[.5rem]", "shrink-0"];
       divSCChildBottom.classList.add(...classes);
 
-      // Initialize value of price
-      const formattedAmt = new Intl.NumberFormat("en-PH", {
-        style: "currency",
-        currency: "PHP"
-      }).format(0);
-
       // Transaction Details
       const divBTD = document.createElement("div");
       classes = ["border", "border-borderColor", "rounded-md", "p-[.3rem]"];
@@ -769,7 +754,7 @@ async function renderMenuList(container){
       spanTDST.textContent = "SubTotal";
       const spanTDSTP = document.createElement("span"); 
       spanTDSTP.id = "sub-total-price";
-      spanTDSTP.textContent = formattedAmt;
+      spanTDSTP.textContent = formatAmount.format(0);
       divTDST.appendChild(spanTDST);
       divTDST.appendChild(spanTDSTP);
       // Taxes
@@ -806,9 +791,9 @@ async function renderMenuList(container){
       // Bottom Side
       const divBTDBS = document.createElement("div");
       divBTDBS.classList.add(...sharedBottomClasses);
-      // Total Payment
+      // Total Amount
       const spanBTDTP = document.createElement("span");
-      spanBTDTP.textContent = "Total Payment";
+      spanBTDTP.textContent = "Total Amount";
       const spanBTDTPP = document.createElement("span");
       spanBTDTPP.id = "total-payment-price";
       spanBTDTPP.textContent = formattedAmt;
@@ -890,7 +875,7 @@ async function renderMenuList(container){
                 console.log(order);
                 orders.push({
                   id: order.id,
-                  foodId: order.foodId,
+                  number: order.number,
                   quantity: order.quantity,
                   sizeId: order.sizeId,
                   tableNo: lSelectBTNS.selectedIndex
@@ -1055,7 +1040,7 @@ async function renderMenuList(container){
       const divMenuDisplay = document.createElement("div");
       classes = ["flex", "border", "max-h-[4.15rem]", "border-borderColor", "p-[.5rem]", "gap-[.3rem]", "text-primaryColor", "font-semibold", "rounded-md"];
       divMenuDisplay.classList.add(...classes);
-      divMenuDisplay.id = `${element.foodId}-MD`;
+      divMenuDisplay.id = `${element.number}-MD`;
 
       // Image
       const imgMD = document.createElement("img"); 
@@ -1094,7 +1079,7 @@ async function renderMenuList(container){
       if(element.sizeId != null){
         spanCMDTS.id = `${element.sizeId}-MDQTY`;
       }else{
-        spanCMDTS.id = `${element.foodId}-MDQTY`;
+        spanCMDTS.id = `${element.number}-MDQTY`;
       }
       
       divMDTSFCCntr.appendChild(spanFDMDTS);
@@ -1125,13 +1110,9 @@ async function renderMenuList(container){
       if(element.sizeId != null){
         spanMDLSBS.id = `${element.sizeId}-MDPRICE`;
       }else{
-        spanMDLSBS.id = `${element.foodId}-MDPRICE`;
+        spanMDLSBS.id = `${element.number}-MDPRICE`;
       }
-      const formattedPrice = new Intl.NumberFormat("en-PH", {
-        style: "currency",
-        currency: "PHP"
-      }).format(element.price * element.quantity);
-      spanMDLSBS.textContent = formattedPrice;
+      spanMDLSBS.textContent = formatAmount.format(element.price * element.quantity);
       
       // SVG Container
       const divMDRSBSCntr = document.createElement("div");
@@ -1169,8 +1150,8 @@ async function renderMenuList(container){
         // Editing of button should happend during opening of modal
 
       }else{
-        const btnATC = document.getElementById(`${element.foodId}-ATC`);
-        const btnAM = document.getElementById(`${element.foodId}-AM`);
+        const btnATC = document.getElementById(`${element.number}-ATC`);
+        const btnAM = document.getElementById(`${element.number}-AM`);
 
         if(btnATC != null && btnAM != null){
           btnATC.classList.remove("flex");
@@ -1205,21 +1186,9 @@ async function renderMenuList(container){
     }
 
     let formattedPhpAmt = "";
-    formattedPhpAmt = new Intl.NumberFormat("en-PH", {
-          style: "currency",
-          currency: "PHP"
-        }).format(orderAmt - taxAmt);
-    stp.textContent = formattedPhpAmt;
-    formattedPhpAmt = new Intl.NumberFormat("en-PH", {
-        style: "currency",
-        currency: "PHP"
-      }).format(taxAmt);
-      tp.textContent = formattedPhpAmt;
-      formattedPhpAmt = new Intl.NumberFormat("en-PH", {
-          style: "currency",
-          currency: "PHP"
-        }).format(orderAmt);
-    tpp.textContent = formattedPhpAmt;
+    stp.textContent = formatAmount.format(orderAmt - taxAmt);
+    tp.textContent = formatAmount.format(taxAmt);
+    tpp.textContent = formatAmount.format(orderAmt);
   }
 
   function addEventsOnEditAndDeleteSvg(svgCntrRef, element){
@@ -1256,7 +1225,7 @@ async function renderMenuList(container){
       btnYes.addEventListener("click",async () => {
         const deleteRequest = {
           receiptNo: element.receiptNo,
-          foodId: element.foodId
+          number: element.number
         };
 
         const response = await orderService.deleteOrder(deleteRequest);
