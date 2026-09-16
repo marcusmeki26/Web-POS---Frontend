@@ -1,5 +1,7 @@
 import { updateTime } from './pos/datefunction.js';
 
+// We can make use of sweetalert2 :REMOVE-COMMENT
+
 const basePath = import.meta.env.VITE_ROOT_PROJECT_PATH;
 
 // Entry point
