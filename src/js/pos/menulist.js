@@ -7,7 +7,6 @@ import { orderTypeService } from "../services/ordertypeservice";
 
 // Proceed to Payment is the last process where it will send the whole transaction to the backend. There will be a popup of how much
 //  +the customer paid :REMOVE-COMMENT 
-// Make amount formatted as global access since we can reuse it :REMOVE-COMMENT
 
 async function renderMenuList(container){
   const formatAmount = new Intl.NumberFormat("en-PH", {
@@ -339,7 +338,7 @@ async function renderMenuList(container){
                     classes = ["leading-none"];
                     spanMDLSBS.classList.add(...classes);
                     spanMDLSBS.id = `${sizeId}-MDPRICE`;
-                    spanMDLSBS.textContent = prodVariantPrice;
+                    spanMDLSBS.textContent = element.amount;
                     
                     // SVG Container
                     const divMDRSBSCntr = document.createElement("div");
@@ -652,6 +651,7 @@ async function renderMenuList(container){
 
         btnAM.addEventListener("click", async () => {
           const order = await orderService.getOrderByNumber(element.id);
+          console.log(order);
 
           if(order != null || order != "" || order.length > 0){
             // Locates which index
@@ -769,7 +769,7 @@ async function renderMenuList(container){
         spanTDT.textContent += ` ${taxDesc}`;
       const spanTDTP = document.createElement("span");
       spanTDTP.id = "taxes-price";
-      spanTDTP.textContent = formattedAmt;
+      spanTDTP.textContent = formatAmount.format(0);
       divTDT.appendChild(spanTDT);
       divTDT.appendChild(spanTDTP);
       // Discount
@@ -781,7 +781,7 @@ async function renderMenuList(container){
       spanTDD.textContent = "Discount"
       const spanTDDP = document.createElement("span");
       spanTDDP.id = "discount-price";
-      spanTDDP.textContent = formattedAmt;
+      spanTDDP.textContent = formatAmount.format(0);
       divTDD.appendChild(spanTDD);
       divTDD.appendChild(spanTDDP);
       divBTDTS.appendChild(divTDST);
@@ -796,7 +796,7 @@ async function renderMenuList(container){
       spanBTDTP.textContent = "Total Amount";
       const spanBTDTPP = document.createElement("span");
       spanBTDTPP.id = "total-payment-price";
-      spanBTDTPP.textContent = formattedAmt;
+      spanBTDTPP.textContent = formatAmount.format(0);
       divBTDBS.appendChild(spanBTDTP);
       divBTDBS.appendChild(spanBTDTPP);
       

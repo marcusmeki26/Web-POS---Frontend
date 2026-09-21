@@ -6,6 +6,7 @@ import { orderService } from "../services/orderservice";
 // UI Bug when there is no filtered no. of seats :REMOVE-COMMENT
 // !PRIORITIZE!
 // Bill out functionality :REMOVE-COMMENT
+// Add referesh when ok is pressed after payment :REMOVE-COMMENT
 
 async function renderManageTable(container){
   const formatAmount = new Intl.NumberFormat("en-PH", {
@@ -534,6 +535,8 @@ async function renderManageTable(container){
         receiptNo: orderList[0].receiptNo,
         tableNo: orderList[0].tableId
       }
+      // The backend will process moving of order line into sales, summary, meaning if the payment is greater than the amount backend will finish the transaction :REMOVE-COMMENT
+      // Think of what is the best response body from backend so that the frontend knows what will happen :REMOVE-COMMENT 
       const response = await orderService.postPaymentLine(paymentData);
 
       if(response.processTransaction){
@@ -716,6 +719,7 @@ async function renderManageTable(container){
     bodyRef.appendChild(breakdownDiv);
 
     okBtn.addEventListener("click", () => {
+      window.location.reload();
       bodyRef.removeChild(breakdownDiv);
     });
   }
