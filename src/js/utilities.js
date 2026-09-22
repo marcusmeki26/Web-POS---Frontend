@@ -1,10 +1,13 @@
+import { authService } from "./services/authservice";
+
 const projBasePath = import.meta.env.VITE_ROOT_PROJECT_PATH; 
 
-function processCreds({ username, password }){
-  // Go to landingpage.html after correct validation
+export async function processCreds(creds){
+  const response = await authService.login(creds);
 
-  sessionStorage.setItem("active-tab", "menu");
-  window.location.href = `${projBasePath}/landingpage`;
+  if(response.status == 200){
+    // Go to landingpage.html after correct validation
+    // sessionStorage.setItem("active-tab", "menu");
+    window.location.href = `${projBasePath}/landingpage`;
+  }
 }
-
-export { processCreds };
