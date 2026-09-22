@@ -7,6 +7,7 @@ import { orderTypeService } from "../services/ordertypeservice";
 
 // Proceed to Payment is the last process where it will send the whole transaction to the backend. There will be a popup of how much
 //  +the customer paid :REMOVE-COMMENT 
+// No take-out functionality :REMOVE-COMMENT
 
 async function renderMenuList(container){
   const formatAmount = new Intl.NumberFormat("en-PH", {
@@ -915,13 +916,17 @@ async function renderMenuList(container){
           selectBTNS.options[0].value = "N/A";
 
           // Proceed to payment logic - TAKE OUT
-          btnAddToTable.textContent = "Prooced to payment";
+          btnAddToTable.textContent = "Proceed to payment";
           btnAddToTable.setAttribute("order-type", "2");
           btnAddToTable.disabled = false;
           classes = ["bg-primaryColor/50", "cursor-not-allowed"]
           btnAddToTable.classList.remove(...classes);
           classes = ["bg-primaryColor", "cursor-pointer", "hover:bg-secondaryBg", "hover:text-primaryColor"]
           btnAddToTable.classList.add(...classes);
+
+          btnAddToTable.addEventListener("click", async () => {
+
+          });
         }else{
           selectBTNS.disabled = false;
           selectBTNS.options[0].textContent = "Table Option";
