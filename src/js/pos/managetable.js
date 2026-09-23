@@ -14,7 +14,7 @@ async function renderManageTable(container){
     currency: "PHP"
   });
 
-  sessionStorage.setItem("active-tab", "table");
+  sessionStorage.setItem("active-tab", "manage-table");
 
   let classes;
 
@@ -526,7 +526,7 @@ async function renderManageTable(container){
           }
         });
       }
-
+      
       const paymentData = {
         number: tenderType[2],
         payment: payment,
@@ -538,16 +538,16 @@ async function renderManageTable(container){
       // The backend will process moving of order line into sales, summary, meaning if the payment is greater than the amount backend will finish the transaction :REMOVE-COMMENT
       // Think of what is the best response body from backend so that the frontend knows what will happen :REMOVE-COMMENT 
       const response = await orderService.postPaymentLine(paymentData);
-
+      console.log(response);
       if(response.processTransaction){
         // Posting of transaction
         bodyRef.removeChild(divNumKeyboard);
-        const orderList = await orderService.getOrderByTableId(`${paymentData.tableNo}`);
-        PostBreakdownDisplay(bodyRef, totalAmtToPay, payment, orderList);
+        // const orderListByTableId = await orderService.getOrderByTableId(`${paymentData.tableNo}`);
+        PostBreakdownDisplay(bodyRef, totalAmtToPay, payment, response.orderList);
       }else{
         bodyRef.removeChild(divNumKeyboard);
-        const orderList = await orderService.getOrderByTableId(`${paymentData.tableNo}`);
-        populateCollapsibleContent(orderList, collapSibleCntrRef);
+        // const orderListByTableId = await orderService.getOrderByTableId(`${paymentData.tableNo}`);
+        populateCollapsibleContent(response.orderList, collapSibleCntrRef);
       }
     });
 
