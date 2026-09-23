@@ -8,13 +8,15 @@ import { orderTypeService } from "../services/ordertypeservice";
 // Proceed to Payment is the last process where it will send the whole transaction to the backend. There will be a popup of how much
 //  +the customer paid :REMOVE-COMMENT 
 // No take-out functionality :REMOVE-COMMENT
+// Fix usage of inventory[0] to menu without variant sizes. Check postman for reference :REMOVE-COMMENT 
 
 async function renderMenuList(container){
   const formatAmount = new Intl.NumberFormat("en-PH", {
     style: "currency",
     currency: "PHP"
   });
-  sessionStorage.setItem("active-tab", "menu");
+  
+  sessionStorage.setItem("active-tab", "menu-list");
 
   // Set tax percentage on local storage
   const taxPercentage = await taxService.getActiveTax();
@@ -136,7 +138,7 @@ async function renderMenuList(container){
   async function displayMenuList(menuList){
     let receiptNo = "";
 
-    if(section.children.length === 2){
+    if(section.children.length === 2){ // Deletes the first DOM
       section.removeChild(section.children[1]);
     }
     if(menuList.length !== 0){
@@ -178,7 +180,7 @@ async function renderMenuList(container){
             }
           }
         }else{
-          displayMenuStatus(spanStatus, inventory[0].quantity);
+          displayMenuStatus(spanStatus, element.quantity);
         }
 
         // Menu Name & Menu Price
@@ -333,13 +335,13 @@ async function renderMenuList(container){
                     const divMDBS = document.createElement("div");
                     classes = ["flex", "justify-between", "items-end"];
                     divMDBS.classList.add(...classes);
-      
+
                     // Price
                     const spanMDLSBS = document.createElement("span");
                     classes = ["leading-none"];
                     spanMDLSBS.classList.add(...classes);
                     spanMDLSBS.id = `${sizeId}-MDPRICE`;
-                    spanMDLSBS.textContent = element.amount;
+                    spanMDLSBS.textContent = formatAmount.format(prodVariant.productVariant.price);
                     
                     // SVG Container
                     const divMDRSBSCntr = document.createElement("div");
@@ -652,7 +654,6 @@ async function renderMenuList(container){
 
         btnAM.addEventListener("click", async () => {
           const order = await orderService.getOrderByNumber(element.id);
-          console.log(order);
 
           if(order != null || order != "" || order.length > 0){
             // Locates which index
@@ -872,8 +873,7 @@ async function renderMenuList(container){
               const currentOrders = await orderService.getUnplacedOrders();
               
               let orders = [];
-              currentOrders.forEach(order => {
-                console.log(order);
+              currentOrders.forEach(order => {;
                 orders.push({
                   id: order.id,
                   number: order.number,
