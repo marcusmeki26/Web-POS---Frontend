@@ -1,5 +1,6 @@
 import { updateTime } from './pos/datefunction.js';
 import { authService, getRole } from './services/authservice.js';
+import { removeParams } from './utilities.js';
 
 // We can make use of sweetalert2 :REMOVE-COMMENT
 
@@ -106,6 +107,18 @@ async function navigate(page){
       .catch((err) => {
         console.error("Failed to load module:", err);
       });
+    }else if(page === "inventory"){
+      import('./admin/inventory.js')
+      .then(({ renderInventory }) => {
+        removeParams();
+        const menuList = document.getElementById("inventory");
+        menuList.classList.add("active");
+
+        renderInventory(app);
+      })
+      .catch((err) => {
+        console.error("Failed to load module:", err);
+      });
     }else if(page === "user"){
       import('./admin/user.js')
       .then(({ renderUser }) => {
@@ -139,12 +152,6 @@ function initNavOnClick(){
       }
     }
   }
-}
-
-function removeParams(){
-  const url = new URL(window.location.href);
-  const newUrl = url.origin + "/landingpage";
-  window.history.replaceState({}, "", newUrl);
 }
 
 function populateNavItem(){
@@ -191,8 +198,7 @@ function populateNavItem(){
         <path d="M18.8984 12.1499C18.8984 8.42198 15.8764 5.3999 12.1484 5.3999C8.42051 5.3999 5.39844 8.42198 5.39844 12.1499C5.39844 15.8778 8.42051 18.8999 12.1484 18.8999C15.8764 18.8999 18.8984 15.8778 18.8984 12.1499Z" stroke="#3A6EA5" stroke-width="1.5" stroke-linejoin="round"/>
         <path d="M37.8008 31.05C37.8008 27.3221 34.7788 24.3 31.0508 24.3C27.3228 24.3 24.3008 27.3221 24.3008 31.05C24.3008 34.778 27.3228 37.8 31.0508 37.8C34.7788 37.8 37.8008 34.778 37.8008 31.05Z" stroke="#3A6EA5" stroke-width="1.5" stroke-linejoin="round"/>
         <path d="M18.8984 31.05C18.8984 27.3221 15.8764 24.3 12.1484 24.3C8.42051 24.3 5.39844 27.3221 5.39844 31.05C5.39844 34.778 8.42051 37.8 12.1484 37.8C15.8764 37.8 18.8984 34.778 18.8984 31.05Z" stroke="#3A6EA5" stroke-width="1.5" stroke-linejoin="round"/>
-      </svg>
-      `,
+      </svg>`,
       `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M7 17L7 13" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round"/>
         <path d="M12 17L12 7" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round"/>
@@ -206,11 +212,17 @@ function populateNavItem(){
         <path d="M4 6L11.3846 2.90586C13.0337 2.21492 13.8582 1.86945 14.5149 2.04543C14.9408 2.15954 15.3173 2.41193 15.5859 2.76336C16 3.30532 16 4.20355 16 6" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`,
       `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 18V10C20 8.11438 20 7.17157 19.4142 6.58579C18.8284 6 17.8856 6 16 6H4V18C4 19.8856 4 20.8284 4.58579 21.4142C5.17157 22 6.11438 22 8 22H16C17.8856 22 18.8284 22 19.4142 21.4142C20 20.8284 20 19.8856 20 18Z" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 11C13.6569 11 15 12.3431 15 14M12 11C10.3431 11 9 12.3431 9 14M12 11V10M15 14H9M15 14H16M9 14H8" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8 18H16" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 6L11.3846 2.90586C13.0337 2.21492 13.8582 1.86945 14.5149 2.04543C14.9408 2.15954 15.3173 2.41193 15.5859 2.76336C16 3.30532 16 4.20355 16 6" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`,
+      `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M13.1977 8H10.8023C7.35836 8 5.03641 11.5806 6.39304 14.7994C6.58202 15.2477 7.0156 15.5385 7.49535 15.5385H8.33892C8.62326 15.5385 8.87111 15.7352 8.94007 16.0157L10.0261 20.4328C10.2525 21.3539 11.0663 22 12 22C12.9337 22 13.7475 21.3539 13.9739 20.4328L15.0599 16.0157C15.1289 15.7352 15.3767 15.5385 15.6611 15.5385H16.5047C16.9844 15.5385 17.418 15.2477 17.607 14.7994C18.9636 11.5806 16.6416 8 13.1977 8Z" stroke="#3A6EA5" stroke-width="1.5"/>
         <circle cx="12" cy="5" r="3" stroke="#3A6EA5" stroke-width="1.5"/>
       </svg>`
     ];
-    const navItems = ["Dashboard", "Report", "Menu", "User"];
+    const navItems = ["Dashboard", "Report", "Menu", "Inventory", "User"];
     navItems.forEach((item, index) => {
       const li = document.createElement("li");
       classes = ["flex", "gap-[.5rem]", "items-center", "p-[.5rem]", "text-xs", "cursor-pointer"];
