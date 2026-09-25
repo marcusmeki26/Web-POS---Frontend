@@ -52,12 +52,14 @@ html {
   color: #FFF;
 }
 
-#menu-list-container button.active{
+#menu-list-container button.active,
+#menu-container button.active{
   background-color: #3A6Ea5;
   color: #FFF;
   font-weight: 500;
 }
-#menu-list-container button.active span{
+#menu-list-container button.active span,
+#menu-container button.active span{
   background-color: #2F5D8A;
 }
 
