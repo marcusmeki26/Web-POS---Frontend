@@ -1,12 +1,10 @@
 import { tableListService } from "../services/tablelistservice";
 import { orderService } from "../services/orderservice";
+import { createOkButton, createCancelBtn, removeParams } from '../utilities';
 
 // The table list view should have filter for the number of seats. >= No. of seats is the filter :REMOVE-COMMENT 
 // We should also add `available` tables as filter :REMOVE-COMMENT
 // UI Bug when there is no filtered no. of seats :REMOVE-COMMENT
-// !PRIORITIZE!
-// Bill out functionality :REMOVE-COMMENT
-// Add referesh when ok is pressed after payment :REMOVE-COMMENT
 
 async function renderManageTable(container){
   const formatAmount = new Intl.NumberFormat("en-PH", {
@@ -407,12 +405,6 @@ async function renderManageTable(container){
   container.appendChild(section);
 
   // Utilities
-  function removeParams(){
-    const url = new URL(window.location.href);
-    const newUrl = url.origin + "/landingpage";
-    window.history.replaceState({}, "", newUrl);
-  }
-
   async function openNumericKeyboardLayout(bodyRef, divModalPostOrder, tenderType, totalAmtToPay, orderList, collapSibleCntrRef){
     bodyRef.removeChild(divModalPostOrder);
     const numericKeyboard = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ",", "0", "."];
@@ -722,24 +714,6 @@ async function renderManageTable(container){
       window.location.reload();
       bodyRef.removeChild(breakdownDiv);
     });
-  }
-
-  function createOkButton(){
-    let createOkBtn = document.createElement("button");
-    createOkBtn.textContent = "OK";
-    classes = ["p-2", "rounded-md", "bg-sucessConfirm", "cursor-pointer", "text-primaryBg", "w-full", "hover:bg-sucessConfirm/50"];
-    createOkBtn.classList.add(...classes);
-
-    return createOkBtn;
-  }
-
-  function createCancelBtn(){
-    let createCancelBtn = document.createElement("button");
-    classes = ["p-2", "rounded-md", "bg-errorAlert", "cursor-pointer", "text-primaryBg", "w-full", "hover:bg-errorAlert/50"];
-    createCancelBtn.classList.add(...classes);
-    createCancelBtn.textContent = "Cancel";
-
-    return createCancelBtn;
   }
 }
 
