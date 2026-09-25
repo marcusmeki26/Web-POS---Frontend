@@ -8,7 +8,6 @@ import { orderTypeService } from "../services/ordertypeservice";
 // Proceed to Payment is the last process where it will send the whole transaction to the backend. There will be a popup of how much
 //  +the customer paid :REMOVE-COMMENT 
 // No take-out functionality :REMOVE-COMMENT
-// Fix usage of inventory[0] to menu without variant sizes. Check postman for reference :REMOVE-COMMENT 
 
 async function renderMenuList(container){
   const formatAmount = new Intl.NumberFormat("en-PH", {
