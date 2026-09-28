@@ -527,8 +527,7 @@ async function renderManageTable(container){
         receiptNo: orderList[0].receiptNo,
         tableNo: orderList[0].tableId
       }
-      // The backend will process moving of order line into sales, summary, meaning if the payment is greater than the amount backend will finish the transaction :REMOVE-COMMENT
-      // Think of what is the best response body from backend so that the frontend knows what will happen :REMOVE-COMMENT 
+
       const response = await orderService.postPaymentLine(paymentData);
       console.log(response);
       if(response.processTransaction){
@@ -574,9 +573,6 @@ async function renderManageTable(container){
   }
 
   function PostBreakdownDisplay(bodyRef, totalAmtToPay, payment, orderList){
-    // Should clear the line & move to sales :REMOVE-COMMENT
-    // Should also display the break down + the total amount and change
-
     const breakdownDiv = document.createElement("div");
     classes = ["flex", "justify-center", "items-center", "absolute", "w-full", "h-full", "bg-secondaryBg/50", "text-primaryBg", "z-[3]"];
     breakdownDiv.classList.add(...classes);
