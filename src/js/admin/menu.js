@@ -3,10 +3,6 @@ import { foodService } from "../services/foodservice";
 import { sizeService } from "../services/sizeService";
 import { createOkButton, createCancelBtn, removeParams } from '../utilities';
 
-// Add fetch of sizes for existing product with variant. It should be on select tag :REMOVE-COMMENT 
-// Pagisipan itong comment sa taas since meron na pala sa reponse ng details. maybe need lang yung ganito kapag adding of new value? :REMOVE-COMMENT
-// Or pwede itulad dun sa yes or no na variant if != null gawing selected value :REMOVE-COMMENT
-
 export async function renderMenu(container){
   const formatAmount = new Intl.NumberFormat("en-PH", {
     style: "currency",
@@ -203,7 +199,7 @@ export async function renderMenu(container){
         divNameNPriceCntr.classList.add(...classes);
 
         const spanName = document.createElement("span");
-        spanName.textContent = element.shortFoodDesc;
+        spanName.textContent = element.foodName;
         divNameNPriceCntr.appendChild(spanName);
         
         // Inventory Container
@@ -317,7 +313,7 @@ export async function renderMenu(container){
               // If the variant is true before and passed as false. Delete related record from product_variant table :REMOVE-COMMENT 
 
               const url = new URL(window.location.href);
-              url.searchParams.set("food", element.id);
+              url.searchParams.set("foodId", element.id);
               window.history.pushState({}, "", url);
 
               const body = document.getElementById("body")
@@ -337,38 +333,76 @@ export async function renderMenu(container){
               // Menu name
               const divMenuNameCntr = document.createElement("div");
               const inputMenuName = document.createElement("input");
-              classes = ["w-full", "border-[.1rem]", "border-black"];
+              classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
               inputMenuName.classList.add(...classes);
               inputMenuName.id = "menu-name";
               inputMenuName.type = "text";
               inputMenuName.value = element.foodName;
               const lblMenuName = document.createElement("label");
+              classes = ["text-primaryColor", "font-extrabold"];
+              lblMenuName.classList.add(...classes);
               lblMenuName.for = "menu-name";
               lblMenuName.textContent = "Menu Name";
               divMenuNameCntr.appendChild(lblMenuName);
               divMenuNameCntr.appendChild(inputMenuName);
               formMenuDetails.appendChild(divMenuNameCntr);
-
+              
+              const divMenuShortDesc = document.createElement("div");
+              const inputMenuShortDesc = document.createElement("input");
+              classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
+              inputMenuShortDesc.classList.add(...classes);
+              inputMenuShortDesc.id = "menu-short-desc";
+              inputMenuShortDesc.type = "text";
+              inputMenuShortDesc.value = element.shortFoodDesc;
+              const lblMenuShortDesc = document.createElement("label");
+              classes = ["text-primaryColor", "font-extrabold"];
+              lblMenuShortDesc.classList.add(...classes);
+              lblMenuShortDesc.for = "menu-short-desc";
+              lblMenuShortDesc.textContent = "Menu Short Desc.";
+              divMenuShortDesc.appendChild(lblMenuShortDesc);
+              divMenuShortDesc.appendChild(inputMenuShortDesc);
+              formMenuDetails.appendChild(divMenuShortDesc);
+              
               // Menu price
               const divMenuPriceCntr = document.createElement("div");
               const inputMenuPrice = document.createElement("input");
-              classes = ["w-full", "border-[.1rem]", "border-black"];
+              classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
               inputMenuPrice.classList.add(...classes);
               inputMenuPrice.id = "menu-price";
               inputMenuPrice.type = "text";
               if(!element.withVariant)
                 inputMenuPrice.value = element.price;
               const lblMenuPrice = document.createElement("label");
+              classes = ["text-primaryColor", "font-extrabold"];
+              lblMenuPrice.classList.add(...classes);
               lblMenuPrice.for = "menu-price";
               lblMenuPrice.textContent = "Menu Price";
               divMenuPriceCntr.appendChild(lblMenuPrice);
               divMenuPriceCntr.appendChild(inputMenuPrice);
               formMenuDetails.appendChild(divMenuPriceCntr);
 
+              // Menu Quantity
+              const divMenuQty = document.createElement("div");
+              const inputMenuQty = document.createElement("input");
+              classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
+              inputMenuQty.classList.add(...classes);
+              inputMenuQty.id = "menu-quantity";
+              inputMenuQty.type = "text";
+              if(!element.withVariant)
+                inputMenuQty.value = element.quantity;
+              const lblMenuQty = document.createElement("label");
+              classes = ["text-primaryColor", "font-extrabold"];
+              lblMenuQty.classList.add(...classes);
+              lblMenuQty.for = "menu-quantity";
+              lblMenuQty.textContent = "Menu Quantity";
+              divMenuQty.appendChild(lblMenuQty);
+              divMenuQty.appendChild(inputMenuQty);
+              formMenuDetails.appendChild(divMenuQty);
+
               // Menu category
               const divMenuCatCntr = document.createElement("div");
               const selectMenuCat = document.createElement("select");
-              classes = ["w-full", "border-[.1rem]", "border-black"];
+              classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
               selectMenuCat.classList.add(...classes);
               selectMenuCat.id = "menu-category";
               categories.forEach(category  => {
@@ -379,6 +413,8 @@ export async function renderMenu(container){
                 }
               });
               const lblMenuCat = document.createElement("label");
+              classes = ["text-primaryColor", "font-extrabold"];
+              lblMenuCat.classList.add(...classes);
               lblMenuCat.for = "menu-category";
               lblMenuCat.textContent = "Menu Category";
               divMenuCatCntr.appendChild(lblMenuCat);
@@ -408,6 +444,7 @@ export async function renderMenu(container){
               addMoreBtn.addEventListener("click", () => {
                 const divMenuVariantDetChildCntr = document.createElement("div");
                 classes = ["flex", "gap-[.3rem]"];
+                divMenuVariantDetChildCntr.className = "variant-item-cntr";
                 divMenuVariantDetChildCntr.classList.add(...classes);
 
                 // Delete SVG
@@ -424,20 +461,24 @@ export async function renderMenu(container){
                   </svg>
                 `;
                 divDeleteSvgCntr.addEventListener("click", () => {
-                  deleteVariant(divMenuVariantDetCntr, divMenuVariantDetChildCntr);
+                  deleteVariant(divMenuVariantDetCntr, divMenuVariantDetChildCntr, variant.productVariant.size.id);
                 });
                 divMenuVariantDetChildCntr.appendChild(divDeleteSvgCntr);
 
                 const divSizeNameCtr = document.createElement("div");
+                classes = ["flex-[25%]"];
+                divSizeNameCtr.classList.add(...classes);
                 // Size name
                 const selectSizeName = document.createElement("select");
-                classes = ["w-[100%]", "border-[.1rem]", "border-black"];
+                classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
                 selectSizeName.classList.add(...classes);
                 selectSizeName.id = "menu-size-name";
                 sizes.forEach(size => {
                   selectSizeName.add(new Option(`${size.sizeName}`, size.id));
                 });
                 const lblSizeName = document.createElement("label");
+                classes = ["text-primaryColor", "font-extrabold"];
+                lblSizeName.classList.add(...classes);
                 lblSizeName.textContent = "Size Name";
                 lblSizeName.for = "menu-size-name";
                 divSizeNameCtr.appendChild(lblSizeName);
@@ -445,26 +486,51 @@ export async function renderMenu(container){
                 divMenuVariantDetChildCntr.appendChild(divSizeNameCtr);
                 
                 const divSizePriceCntr = document.createElement("div");
+                classes = ["flex-[25%]"];
+                divSizePriceCntr.classList.add(...classes);
                 // Size price
                 const inputSizePrice = document.createElement("input");
+                classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]", "menu-size-price"];
                 inputSizePrice.classList.add(...classes);
                 inputSizePrice.type = "text";
-                inputSizePrice.id = "menu-size-prize";
+                inputSizePrice.id = "menu-size-price";
                 const lblSizePrice = document.createElement("label");
+                classes = ["text-primaryColor", "font-extrabold"];
+                lblSizePrice.classList.add(...classes);
                 lblSizePrice.textContent = "Size Price";
                 lblSizePrice.for = "menu-size-price";
                 divSizePriceCntr.appendChild(lblSizePrice);
                 divSizePriceCntr.appendChild(inputSizePrice); 
                 divMenuVariantDetChildCntr.appendChild(divSizePriceCntr);
+                // divMenuVariantDetCntr.appendChild(divMenuVariantDetChildCntr)
+
+                const divSizeQtyCntr = document.createElement("div");
+                classes = ["flex-[30%]"];
+                divSizeQtyCntr.classList.add(...classes);
+                // Size quantity
+                const inputSizeQty = document.createElement("input");
+                classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]", "menu-size-quantity"];
+                inputSizeQty.classList.add(...classes);
+                inputSizeQty.type = "text";
+                inputSizeQty.id = "menu-size-quantity";
+                const lblSizeQty = document.createElement("label");
+                classes = ["text-primaryColor", "font-extrabold"];
+                lblSizeQty.classList.add(...classes);
+                lblSizeQty.textContent = "Size Quantity";
+                lblSizeQty.for = "menu-size-quantity";
+                divSizeQtyCntr.appendChild(lblSizeQty);
+                divSizeQtyCntr.appendChild(inputSizeQty); 
+                divMenuVariantDetChildCntr.appendChild(divSizeQtyCntr);
                 divMenuVariantDetCntr.appendChild(divMenuVariantDetChildCntr)
                 divMenuVariantCntr.appendChild(divMenuVariantDetCntr);
               });
 
               // variant option should be select :REMOVE-COMMENT
               // Variant Details
-              inventory?.forEach(varaint => {
+              inventory?.forEach(variant => {
                 const divMenuVariantDetChildCntr = document.createElement("div");
                 classes = ["flex", "gap-[.3rem]"];
+                divMenuVariantDetChildCntr.className = "variant-item-cntr";
                 divMenuVariantDetChildCntr.classList.add(...classes);
 
                 const divDeleteSvgCntr = document.createElement("div");
@@ -480,51 +546,84 @@ export async function renderMenu(container){
                   </svg>
                 `;
                 divDeleteSvgCntr.addEventListener("click", () => {
-                  deleteVariant(divMenuVariantDetCntr, divMenuVariantDetChildCntr);
+                  deleteVariant(divMenuVariantDetCntr, divMenuVariantDetChildCntr, variant.productVariant.size.id);
                 });
                 divMenuVariantDetChildCntr.appendChild(divDeleteSvgCntr);
 
                 const divSizeNameCtr = document.createElement("div");
+                classes = ["flex-[25%]"];
+                divSizeNameCtr.classList.add(...classes);
                 // Size name
                 const selectSizeName = document.createElement("select");
-                classes = ["w-[100%]", "border-[.1rem]", "border-black"];
+                classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]", "menu-size-name"];
                 selectSizeName.classList.add(...classes);
-                selectSizeName.id = "menu-size-name" + varaint.productVariant.size.sizeName;
+                selectSizeName.id = "menu-size-name " + variant.productVariant.size.sizeName;
+                selectSizeName.setAttribute("data-old-value", variant.productVariant.size.id);
                 sizes.forEach(size => {
-                  if(varaint.productVariant.size.id == size.id)
+                  if(variant.productVariant.size.id == size.id)
                     selectSizeName.add(new Option(`${size.sizeName}`, size.id, true, true));
                   else
                     selectSizeName.add(new Option(`${size.sizeName}`, size.id));
                 });
                 const lblSizeName = document.createElement("label");
+
+                classes = ["text-primaryColor", "font-extrabold"];
+                lblSizeName.classList.add(...classes);
                 lblSizeName.textContent = "Size Name";
-                lblSizeName.for = "menu-size-name" + varaint.productVariant.size.sizeName;
+                lblSizeName.for = "menu-size-name " + variant.productVariant.size.sizeName;
                 divSizeNameCtr.appendChild(lblSizeName);
                 divSizeNameCtr.appendChild(selectSizeName);
                 divMenuVariantDetChildCntr.appendChild(divSizeNameCtr);
                 
                 const divSizePriceCntr = document.createElement("div");
+                classes = ["flex-[25%]"];
+                divSizePriceCntr.classList.add(...classes);
                 // Size price
                 const inputSizePrice = document.createElement("input");
+                classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]", "menu-size-price"];
                 inputSizePrice.classList.add(...classes);
                 inputSizePrice.type = "text";
-                inputSizePrice.id = "menu-size-prize" + varaint.productVariant.size.sizeName;
-                inputSizePrice.value = varaint.productVariant.price;
+                inputSizePrice.id = "menu-size-price " + variant.productVariant.size.sizeName;
+                inputSizePrice.value = variant.productVariant.price;
                 const lblSizePrice = document.createElement("label");
+                classes = ["text-primaryColor", "font-extrabold"];
+                lblSizePrice.classList.add(...classes);
                 lblSizePrice.textContent = "Size Price";
-                lblSizePrice.for = "menu-size-price" + varaint.productVariant.size.sizeName;
+                lblSizePrice.for = "menu-size-price " + variant.productVariant.size.sizeName;
                 divSizePriceCntr.appendChild(lblSizePrice);
                 divSizePriceCntr.appendChild(inputSizePrice); 
                 divMenuVariantDetChildCntr.appendChild(divSizePriceCntr);
 
+                const divSizeQtyCntr = document.createElement("div");
+                classes = ["flex-[30%]"];
+                divSizeQtyCntr.classList.add(...classes);
+                // Size quantity
+                const inputSizeQty = document.createElement("input");
+                classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]", "menu-size-quantity"];
+                inputSizeQty.classList.add(...classes);
+                inputSizeQty.type = "text";
+                inputSizeQty.id = "menu-size-quantity";
+                inputSizeQty.value = variant.quantity;
+                const lblSizeQty = document.createElement("label");
+                classes = ["text-primaryColor", "font-extrabold"];
+                lblSizeQty.classList.add(...classes);
+                lblSizeQty.textContent = "Size Quantity";
+                lblSizeQty.for = "menu-size-quantity";
+                divSizeQtyCntr.appendChild(lblSizeQty);
+                divSizeQtyCntr.appendChild(inputSizeQty); 
+                divMenuVariantDetChildCntr.appendChild(divSizeQtyCntr);
+                divMenuVariantDetCntr.appendChild(divMenuVariantDetChildCntr)
+                divMenuVariantCntr.appendChild(divMenuVariantDetCntr);
                 
                 divMenuVariantDetCntr.appendChild(divMenuVariantDetChildCntr);
               });
-
-              classes = ["border-[.1rem]", "border-black"];
+              
+              classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
               selectMenuVariant.classList.add(...classes);
               selectMenuVariant.id = "menu-variant";
               const lblMenuVariant = document.createElement("label");
+              classes = ["text-primaryColor", "font-extrabold"];
+              lblMenuVariant.classList.add(...classes);
               lblMenuVariant.for = "menu-variant";
               lblMenuVariant.textContent = "Menu Variant";
               divMenuVariantCntr.appendChild(lblMenuVariant);
@@ -535,11 +634,22 @@ export async function renderMenu(container){
                 // Should display variants :REMOVE-COMMENT
                 let value = event.target.value;
                 inputMenuPrice.disabled = value == "true";
+                inputMenuQty.disabled = value == "true";
 
                 if(value == "true"){
+                  inputMenuPrice.classList.add("border-errorAlert");
+                  inputMenuPrice.classList.remove("border-primaryColor");
+                  inputMenuPrice.value = "";
+                  inputMenuQty.classList.add("border-errorAlert");
+                  inputMenuQty.classList.remove("border-primaryColor");
+                  inputMenuQty.value = "";
                   divMenuVariantDetCntr.classList.add("flex");
                   divMenuVariantDetCntr.classList.remove("hidden");
                 }else{
+                  inputMenuPrice.classList.remove("border-errorAlert");
+                  inputMenuPrice.classList.add("border-primaryColor");
+                  inputMenuQty.classList.remove("border-errorAlert");
+                  inputMenuQty.classList.add("border-primaryColor");
                   divMenuVariantDetCntr.classList.remove("flex");
                   divMenuVariantDetCntr.classList.add("hidden");
                 }
@@ -572,9 +682,78 @@ export async function renderMenu(container){
               divEditPopupCntr.appendChild(formMenuDetails);
               divEditPopup.appendChild(divEditPopupCntr);
               body.appendChild(divEditPopup);
+
+              let variantSizes = [];
+              btnOk.addEventListener("click", async () => {
+                let editName = (inputMenuName.value.trim() == "" || inputMenuName.value.trim() == null) ? "" : inputMenuName.value.trim();
+                let editPrice = (inputMenuPrice.value.trim() == "" || inputMenuPrice.value.trim() == null) ? 0 : inputMenuPrice.value.trim();
+                let editShortDesc = (inputMenuShortDesc.value.trim() == "" || inputMenuShortDesc.value.trim() == null) ? "" : inputMenuShortDesc.value.trim();
+                let editQty = (inputMenuQty.value.trim() == "" || inputMenuQty.value.trim() == null) ? 0 : inputMenuQty.value.trim();
+                let withVariant = (selectMenuVariant.value == "true") ? true : false;
+                let category = selectMenuCat.value;
+                
+                const foodPatchRequest = {
+                  name: editName,
+                  price: editPrice,
+                  shortDesc: editShortDesc,
+                  quantity: editQty,
+                  withVariant: withVariant,
+                  category: category,
+                  variants: variantSizes
+                };
+
+                if((editName == ""|| editPrice == "" || editShortDesc == "" || editQty == "" || category == "") && !withVariant){
+                  alert("Please fill all missing fields");
+                  return;
+                }
+
+                const variantItemCntr = document.getElementById("edit-popup-menu-variant");
+                const variantItem = document.getElementsByClassName("variant-item-cntr");
+                const variantItemPrice = variantItemCntr.getElementsByClassName("menu-size-price");
+                const variantItemQty = variantItemCntr.getElementsByClassName("menu-size-quantity");
+                const variantItemSelect = variantItemCntr.getElementsByTagName("select");
+                
+                if(selectMenuVariant.value == "true" && variantItem.length == 0){
+                  alert("Please include at least one variant or make it false.")
+                  return;
+                }
+                
+                Array.from(variantItemPrice).forEach((item, index) => {
+                  if(item.value.trim() == "" || variantItemSelect[index].value.trim() == ""){
+                    alert("Please fill missing fields on variant options.")
+                    return;
+                  }else{
+                    let editInputSizeQty = (variantItemQty[index].value.trim() == "" || variantItemQty[index].value.trim() == null) ? 0 : variantItemQty[index].value.trim(); 
+                    variantSizes.push(
+                      {
+                        sizeId: variantItemSelect[index].value.trim(),
+                        sizePrice :item.value.trim(),
+                        sizeQuantity: editInputSizeQty,
+                        sizeOldId: variantItemSelect[index].getAttribute("data-old-value")
+                      }
+                    )
+                  }
+                });
+
+                console.log(foodPatchRequest.variants);
+
+                const urlChecker = new URL(window.location.href);
+                const searchFoodIdValue = urlChecker.searchParams.get("foodId");
+                if(searchFoodIdValue != null || searchFoodIdValue != ""){
+                  const response = await foodService.patchFoodById(searchFoodIdValue, foodPatchRequest);
+                  if(response.status == 200 || response.status == 201){
+                    alert("Updated successfully.")
+                    window.location.reload();
+                  }else{
+                    alert("Something happened. Unable to update. Please try again");
+                  }
+                }else
+                  alert("Cannot perform an update. Please try again.");
+              });
               
               btnCancel.addEventListener("click", () => {
                 removeParams();
+                window.location.reload();
                 body.removeChild(divEditPopup);
               });
             });
@@ -645,7 +824,7 @@ export async function renderMenu(container){
     }
   }
 
-  function deleteVariant(pMenuVariantParent, pMenuVariantChild){
+  function deleteVariant(pMenuVariantParent, pMenuVariantChild, sizeId){
     const body = document.getElementById("body");
     
     const divConfirmationPopup = document.createElement("div")
@@ -671,10 +850,27 @@ export async function renderMenu(container){
     divConfirmationPopup.appendChild(divConfirmationPopupCntr);
     body.appendChild(divConfirmationPopup);
 
-    btnOk.addEventListener("click", () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("sizeId", sizeId);
+    window.history.pushState({}, "", url);
+
+    btnOk.addEventListener("click", async () => {
       // Should also check if it is existing in table if yes delete it on the table too & DOM:REMOVE-COMMENT
-      pMenuVariantParent.removeChild(pMenuVariantChild);
-      body.removeChild(divConfirmationPopup);
+      const urlChecker = new URL(window.location.href);
+      const searchFoodIdValue = urlChecker.searchParams.get("foodId");
+      const searchSizeIdValue = urlChecker.searchParams.get("sizeId");
+
+      if(searchFoodIdValue != null && searchSizeIdValue != null){
+        const response = await foodService.deleteVariant(searchFoodIdValue, searchSizeIdValue);
+        console.log(response);
+        if(response.status == 200 || response.status == 201){
+          pMenuVariantParent.removeChild(pMenuVariantChild);
+          body.removeChild(divConfirmationPopup);
+        }
+      }else{
+        alert("There was a problem removing variant. Please try again");
+      }
+
     });
     
     btnCancel.addEventListener("click", () => {
