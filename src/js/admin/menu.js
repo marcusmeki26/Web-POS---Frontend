@@ -3,8 +3,8 @@ import { foodService } from "../services/foodservice";
 import { sizeService } from "../services/sizeService";
 import { createOkButton, createCancelBtn, removeParams } from '../utilities';
 
-// Add delete menu functionality :REMOVE-COMMENT
-// Fix loading of image. Fetch from backend :REMOVE-COMMENT
+// No add variant functionality :REMOVE-COMMENT
+// No add category functionlity :REMOVE-COMMENT
 
 export async function renderMenu(container){
   const formatAmount = new Intl.NumberFormat("en-PH", {
@@ -50,7 +50,6 @@ export async function renderMenu(container){
   btnAddMenu.addEventListener("click", () => {
     const body = document.getElementById("body"); 
 
-    // Popup for adding new menu :REMOVE-COMMENT
     const divAddPopup = document.createElement("div");
     classes = ["flex", "justify-center", "items-center", "absolute", "w-full", "h-full", "bg-secondaryBg/50", "text-primaryBg", "z-[3]"];
     divAddPopup.classList.add(...classes);
@@ -200,9 +199,7 @@ export async function renderMenu(container){
     divVariantsCntr.appendChild(btnAddVariant);
     formAddPopup.appendChild(divVariantsCntr);
 
-    // Continue adding needed fields for adding new food :REMOVE-COMMENT
     btnAddVariant.addEventListener("click", () => {
-      // Use proper variables :REMOVE-COMMENT
       const divMenuVariantDetChildCntr = document.createElement("div");
       classes = ["flex", "gap-[.3rem]", "variant-item-cntr"];
       // divMenuVariantDetChildCntr.className = "variant-item-cntr";
@@ -387,7 +384,7 @@ export async function renderMenu(container){
       foodPostRequestFormData.append("food", jsonBlob);
       foodPostRequestFormData.append("image", menuImg);
 
-      console.log(typeof(foodPostRequestFormData.get("variants")));
+      // console.log(typeof(foodPostRequestFormData.get("variants")));
 
       const response = await foodService.postFood(foodPostRequestFormData);
       if(response.status == 200 || response.status == 201){
@@ -521,7 +518,7 @@ export async function renderMenu(container){
       divFC.classList.add(...classes);
 
       console.log(menuList);
-      menuList.forEach(element => {
+      menuList.forEach(async element => {
         const inventory = element.inventory;
 
         const divMenuCntr = document.createElement("div");
@@ -532,7 +529,10 @@ export async function renderMenu(container){
         const img = document.createElement("img");
         classes = ["rounded-sm"];
         // Default to sample first
-        img.src="/sample_img.jpg";
+        // img.src="/sample_img.jpg";
+        const imageValue = await foodService.getImage(element.id);
+        console.log(imageValue);
+        img.src = imageValue;
         img.style.width = "100%";
         img.style.height = "130px";
         img.classList.add(...classes);
@@ -1070,7 +1070,6 @@ export async function renderMenu(container){
         divMenuCntr.appendChild(actionBtnCntr);
 
         btnDeleteFood.addEventListener("click", () => {
-          // No Functionality yet :REMOVE-COMMENT
           const url = new URL(window.location.href);
           url.searchParams.set("foodId", element.id);
           window.history.pushState({}, "", url);
