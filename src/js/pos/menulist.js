@@ -5,8 +5,6 @@ import { taxService } from "../services/taxservice";
 import { tableListService } from "../services/tablelistservice";
 import { orderTypeService } from "../services/ordertypeservice";
 
-// Proceed to Payment is the last process where it will send the whole transaction to the backend. There will be a popup of how much
-//  +the customer paid :REMOVE-COMMENT 
 // No take-out functionality :REMOVE-COMMENT
 
 async function renderMenuList(container){
@@ -150,7 +148,7 @@ async function renderMenuList(container){
       classes = ["flex-3", "grid", "grid-cols-3", "gap-3", "h-max"];
       divFC.classList.add(...classes);
 
-      menuList.forEach(element => {
+      menuList.forEach(async element => {
         let discountAmt = 0; // No functionality yet :REMOVE-COMMENT 
 
         // Initialization
@@ -164,7 +162,9 @@ async function renderMenuList(container){
         const img = document.createElement("img");
         classes = ["rounded-sm"];
         // Default to sample first
-        img.src="/sample_img.jpg";
+        // img.src="/sample_img.jpg";
+        const imagePath = await foodService.getImage(element.id);
+        img.src = imagePath;
         img.style.width = "100%";
         img.style.height = "130px";
         img.classList.add(...classes);
@@ -236,7 +236,6 @@ async function renderMenuList(container){
               divModalCntrChild.appendChild(spanCaption);
 
               element.inventory.forEach(async (prodVariant) => {
-                // Create a variable for each data/record needed. Use it for also passing into API :REMOVE-COMMENT
                 const sizeId = prodVariant.productVariant.size.id;
                 const sizeName = prodVariant.productVariant.size.sizeName;
                 const sizePrice = prodVariant.productVariant.price;
@@ -286,7 +285,8 @@ async function renderMenuList(container){
                     classes = ["flex-1", "rounded-sm"];
                     imgMD.style.width = "20%";
                     // imgMD.style.height = "100%";
-                    imgMD.src = "/sample_img.jpg";
+                    // imgMD.src = "/sample_img.jpg";
+                    imgMD.src = imagePath;
                     imgMD.classList.add(...classes);
       
                     // Right Side Container
@@ -504,7 +504,8 @@ async function renderMenuList(container){
                 classes = ["flex-1", "rounded-sm"];
                 imgMD.style.width = "20%";
                 // imgMD.style.height = "100%";
-                imgMD.src = "/sample_img.jpg";
+                // imgMD.src = "/sample_img.jpg";
+                imgMD.src = imagePath;
                 imgMD.classList.add(...classes);
   
                 // Right Side Container
@@ -829,7 +830,6 @@ async function renderMenuList(container){
       divBOT.appendChild(selectBOTS);
       
       // Table No
-      // If take-out is selected make the table no. `NONE` :REMOVE-COMMENT
       const divBTN = document.createElement("div");
       divBTN.classList.add(...sharedBottomClasses);
       const spanBTNT = document.createElement("span");
@@ -1039,7 +1039,7 @@ async function renderMenuList(container){
 
     // const tableId = elementArr[0];
 
-    elementArr.forEach(element => {
+    elementArr.forEach(async element => {
       // Child Container
       const divMenuDisplay = document.createElement("div");
       classes = ["flex", "border", "max-h-[4.15rem]", "border-borderColor", "p-[.5rem]", "gap-[.3rem]", "text-primaryColor", "font-semibold", "rounded-md"];
@@ -1051,7 +1051,9 @@ async function renderMenuList(container){
       classes = ["flex-1", "rounded-sm"];
       imgMD.style.width = "20%";
       // imgMD.style.height = "100%";
-      imgMD.src = "/sample_img.jpg";
+      // imgMD.src = "/sample_img.jpg";
+      // console.log(element.number);
+      imgMD.src = await foodService.getImage(element.number);
       imgMD.classList.add(...classes);
 
       // Right Side Container
