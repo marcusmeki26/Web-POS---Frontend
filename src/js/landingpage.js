@@ -3,6 +3,7 @@ import { authService, getRole } from './services/authservice.js';
 import { removeParams } from './utilities.js';
 
 // We can make use of sweetalert2 :REMOVE-COMMENT
+// Add store setup on owner page :REMOVE-COMMENT
 
 const basePath = import.meta.env.VITE_ROOT_PROJECT_PATH;
 let classes;
