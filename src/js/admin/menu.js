@@ -3,6 +3,9 @@ import { foodService } from "../services/foodservice";
 import { sizeService } from "../services/sizeService";
 import { createOkButton, createCancelBtn, removeParams } from '../utilities';
 
+// Add delete menu functionality :REMOVE-COMMENT
+// Fix loading of image. Fetch from backend :REMOVE-COMMENT
+
 export async function renderMenu(container){
   const formatAmount = new Intl.NumberFormat("en-PH", {
     style: "currency",
@@ -16,9 +19,13 @@ export async function renderMenu(container){
 
   const categoriesCount = await categoryService.getCategoriesCount();
   const categories = await categoryService.getCategories();
+  const sizes = await sizeService.getSizes();
 
-  if(categoriesCount)
-    totalCatCnt = categoriesCount.length;
+  if(categoriesCount){
+    for(const category of categoriesCount){
+      totalCatCnt += category.categoryCount;
+    }
+  }
 
   const section = document.createElement("section");
   classes = ["flex", "flex-col", "bg-secondaryBg", "h-full", "min-h-0"];
@@ -41,7 +48,357 @@ export async function renderMenu(container){
   classes = ["text-xs", "border-1", "p-2", "rounded-sm", "border-dividerColor", "bg-white", "text-primaryColor", "leading-none", "cursor-pointer", "hover:bg-primaryColor", "hover:text-primaryBg"];
   btnAddMenu.classList.add(...classes);
   btnAddMenu.addEventListener("click", () => {
+    const body = document.getElementById("body"); 
+
     // Popup for adding new menu :REMOVE-COMMENT
+    const divAddPopup = document.createElement("div");
+    classes = ["flex", "justify-center", "items-center", "absolute", "w-full", "h-full", "bg-secondaryBg/50", "text-primaryBg", "z-[3]"];
+    divAddPopup.classList.add(...classes);
+        
+    const divAddPopupCntr = document.createElement("div");
+    classes = ["flex", "flex-col", "gap-[.6rem]", "w-[30%]", "h-max","bg-primaryBg", "p-2", "rounded-md", "shadow-md"];
+    divAddPopupCntr.classList.add(...classes);
+
+    const spanAddTitle = document.createElement("span");
+    classes = ["text-3xl", "font-extrabold", "text-primaryColor"];
+    spanAddTitle.classList.add(...classes);
+    spanAddTitle.textContent = "Add food";
+    divAddPopupCntr.appendChild(spanAddTitle);
+
+    const formAddPopup = document.createElement("form");
+    classes = ["flex", "flex-col", "gap-[.5rem]", "text-black"];
+    formAddPopup.classList.add(...classes);
+    
+    // Menu name
+    const divMenuNameCntr = document.createElement("div");
+    const inputMenuName = document.createElement("input");
+    classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
+    inputMenuName.classList.add(...classes);
+    inputMenuName.type = "text";
+    inputMenuName.id = "input-menu-name";
+    const lblMenuName = document.createElement("label");
+    classes = ["text-primaryColor", "font-extrabold"];
+    lblMenuName.classList.add(...classes);
+    lblMenuName.textContent = "Menu Name";
+    lblMenuName.for = "input-menu-name";
+    divMenuNameCntr.appendChild(lblMenuName);
+    divMenuNameCntr.appendChild(inputMenuName);
+    formAddPopup.appendChild(divMenuNameCntr);
+    
+    // Menu Short Description
+    const divMenuShortDescCntr = document.createElement("div");
+    const inputMenuShortDesc = document.createElement("input");
+    classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
+    inputMenuShortDesc.classList.add(...classes);
+    inputMenuShortDesc.type = "text";
+    inputMenuShortDesc.id = "input-menu-short-desc";
+    const lblMenuShortDesc = document.createElement("label");
+    classes = ["text-primaryColor", "font-extrabold"];
+    lblMenuShortDesc.classList.add(...classes);
+    lblMenuShortDesc.textContent = "Menu Short Description";
+    lblMenuShortDesc.for = "input-menu-short-desc";
+    divMenuShortDescCntr.appendChild(lblMenuShortDesc);
+    divMenuShortDescCntr.appendChild(inputMenuShortDesc);
+    formAddPopup.appendChild(divMenuShortDescCntr);
+
+    // Menu Price
+    const divMenuPriceCntr = document.createElement("div");
+    const inputMenuPrice = document.createElement("input");
+    classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
+    inputMenuPrice.classList.add(...classes);
+    inputMenuPrice.type = "text";
+    inputMenuPrice.id = "input-menu-price";
+    const lblMenuPrice = document.createElement("label");
+    classes = ["text-primaryColor", "font-extrabold"];
+    lblMenuPrice.classList.add(...classes);
+    lblMenuPrice.textContent = "Menu Price";
+    lblMenuPrice.for = "input-menu-price";
+    divMenuPriceCntr.appendChild(lblMenuPrice);
+    divMenuPriceCntr.appendChild(inputMenuPrice);
+    formAddPopup.appendChild(divMenuPriceCntr);
+    
+    // Menu Quantity
+    const divMenuQuantity = document.createElement("div");
+    const inputMenuQty = document.createElement("input");
+    classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
+    inputMenuQty.classList.add(...classes);
+    inputMenuQty.type = "text";
+    inputMenuQty.id = "input-menu-quantity";
+    const lblMenuQty = document.createElement("label");
+    classes = ["text-primaryColor", "font-extrabold"];
+    lblMenuQty.classList.add(...classes);
+    lblMenuQty.textContent = "Menu Quantity";
+    lblMenuQty.for = "input-menu-quantity";
+    divMenuQuantity.appendChild(lblMenuQty);
+    divMenuQuantity.appendChild(inputMenuQty);
+    formAddPopup.appendChild(divMenuQuantity);
+
+    // Menu Category
+    const divMenuCatCntr = document.createElement("div");
+    const selectMenuCat = document.createElement("select");
+    classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
+    selectMenuCat.classList.add(...classes);
+    selectMenuCat.id = "input-menu-category";
+    categories.forEach(category  => {
+      selectMenuCat.add(new Option(category.code, category.code));
+    });
+    const lblMenuCat = document.createElement("label");
+    classes = ["text-primaryColor", "font-extrabold"];
+    lblMenuCat.classList.add(...classes);
+    lblMenuCat.for = "input-menu-category";
+    lblMenuCat.textContent = "Menu Category";
+    divMenuCatCntr.appendChild(lblMenuCat);
+    divMenuCatCntr.appendChild(selectMenuCat);
+    formAddPopup.appendChild(divMenuCatCntr);
+
+    // Menu Image
+    const divMenuImgCntr = document.createElement("div");
+    const inputMenuImg = document.createElement("input");
+    classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor"];
+    inputMenuImg.classList.add(...classes);
+    inputMenuImg.type = "file";
+    inputMenuImg.accept = ".jpg, .jpeg, .png";
+    inputMenuImg.id = "input-menu-image";
+    const lblMenuImg = document.createElement("label");
+    classes = ["text-primaryColor", "font-extrabold"];
+    lblMenuImg.classList.add(...classes);
+    lblMenuImg.textContent = "Menu Image";
+    lblMenuImg.for = "input-menu-image";
+    divMenuImgCntr.appendChild(lblMenuImg);
+    divMenuImgCntr.appendChild(inputMenuImg);
+    formAddPopup.appendChild(divMenuImgCntr);
+
+    // Menu Variant
+    const divMenuVariant = document.createElement("div");
+    classes = ["flex", "flex-col", "gap-[.3rem]"];
+    divMenuVariant.classList.add(...classes);
+    const selectMenuVariant = document.createElement("select");
+    classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
+    selectMenuVariant.classList.add(...classes);
+    selectMenuVariant.id = "input-menu-variant";
+    selectMenuVariant.add(new Option("No", "false", true, true));
+    selectMenuVariant.add(new Option("Yes", "true"));
+    const lblSelectMenuVariant = document.createElement("label");
+    classes = ["text-primaryColor", "font-extrabold"];
+    lblSelectMenuVariant.classList.add(...classes);
+    lblSelectMenuVariant.textContent = "Menu Variant";
+    lblSelectMenuVariant.for = "input-menu-variant";
+    divMenuVariant.appendChild(lblSelectMenuVariant);
+    divMenuVariant.appendChild(selectMenuVariant);
+    formAddPopup.appendChild(divMenuVariant);
+
+    const divVariantsCntr = document.createElement("div");
+    classes = ["hidden", "flex-col", "gap-[.3rem]"];
+    divVariantsCntr.id = "add-popup-menu-variant";
+    divVariantsCntr.classList.add(...classes);
+    // Add more variants
+    const btnAddVariant = document.createElement("button");
+    classes = ["bg-primaryColor", "text-primaryBg", "font-bold", "rounded-md", "p-[.2rem]", "cursor-pointer", "hover:bg-secondaryBg", "hover:text-primaryColor"];
+    btnAddVariant.classList.add(...classes);
+    btnAddVariant.textContent = "Add variant";
+    btnAddVariant.type = "button";
+    divVariantsCntr.appendChild(btnAddVariant);
+    formAddPopup.appendChild(divVariantsCntr);
+
+    // Continue adding needed fields for adding new food :REMOVE-COMMENT
+    btnAddVariant.addEventListener("click", () => {
+      // Use proper variables :REMOVE-COMMENT
+      const divMenuVariantDetChildCntr = document.createElement("div");
+      classes = ["flex", "gap-[.3rem]", "variant-item-cntr"];
+      // divMenuVariantDetChildCntr.className = "variant-item-cntr";
+      divMenuVariantDetChildCntr.classList.add(...classes);
+
+      // Delete SVG
+      const divDeleteSvgCntr = document.createElement("div");
+      classes = ["flex", "justify-center", "items-center"];
+      divDeleteSvgCntr.classList.add(...classes);
+      divDeleteSvgCntr.id = "delete-variant-svg-cntr";
+      divDeleteSvgCntr.innerHTML = `
+        <svg class="cursor-pointer stroke-errorAlert hover:stroke-errorAlert/50" width="25" height="25" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M35.1016 9.90002L33.9861 27.9452C33.701 32.5555 33.5586 34.8608 32.403 36.5182C31.8315 37.3376 31.096 38.0292 30.2428 38.5488C28.5173 39.6 26.2078 39.6 21.5884 39.6C16.9632 39.6 14.6505 39.6 12.9239 38.5468C12.0702 38.0263 11.3344 37.3335 10.7632 36.5127C9.60795 34.8527 9.46857 32.5442 9.18986 27.9274L8.10156 9.90002" stroke-width="2.7" stroke-linecap="round"/>
+          <path d="M5.39844 9.89998H37.7984M28.8987 9.89998L27.67 7.36509C26.8537 5.68124 26.4455 4.83931 25.7415 4.31423C25.5854 4.19776 25.42 4.09415 25.247 4.00444C24.4675 3.59998 23.5318 3.59998 21.6605 3.59998C19.7423 3.59998 18.7832 3.59998 17.9907 4.02139C17.815 4.11479 17.6474 4.2226 17.4896 4.34368C16.7774 4.89004 16.3796 5.76277 15.5839 7.50824L14.4937 9.89998" stroke-width="2.7" stroke-linecap="round"/>
+          <path d="M17.1016 29.7V18.9" stroke-width="2.7" stroke-linecap="round"/>
+          <path d="M26.1016 29.7V18.9" stroke-width="2.7" stroke-linecap="round"/>
+        </svg>
+      `;
+      divMenuVariantDetChildCntr.appendChild(divDeleteSvgCntr);
+
+      const divSizeNameCtr = document.createElement("div");
+      classes = ["flex-[25%]"];
+      divSizeNameCtr.classList.add(...classes);
+      // Size name
+      const selectSizeName = document.createElement("select");
+      classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
+      selectSizeName.classList.add(...classes);
+      selectSizeName.id = "menu-size-name";
+      sizes.forEach(size => {
+        selectSizeName.add(new Option(`${size.sizeName}`, size.id));
+      });
+      const lblSizeName = document.createElement("label");
+      classes = ["text-primaryColor", "font-extrabold"];
+      lblSizeName.classList.add(...classes);
+      lblSizeName.textContent = "Size Name";
+      lblSizeName.for = "menu-size-name";
+      divSizeNameCtr.appendChild(lblSizeName);
+      divSizeNameCtr.appendChild(selectSizeName);
+      divMenuVariantDetChildCntr.appendChild(divSizeNameCtr);
+      
+      const divSizePriceCntr = document.createElement("div");
+      classes = ["flex-[25%]"];
+      divSizePriceCntr.classList.add(...classes);
+      // Size price
+      const inputSizePrice = document.createElement("input");
+      classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]", "menu-size-price"];
+      inputSizePrice.classList.add(...classes);
+      inputSizePrice.type = "text";
+      inputSizePrice.id = "menu-size-price";
+      const lblSizePrice = document.createElement("label");
+      classes = ["text-primaryColor", "font-extrabold"];
+      lblSizePrice.classList.add(...classes);
+      lblSizePrice.textContent = "Size Price";
+      lblSizePrice.for = "menu-size-price";
+      divSizePriceCntr.appendChild(lblSizePrice);
+      divSizePriceCntr.appendChild(inputSizePrice); 
+      divMenuVariantDetChildCntr.appendChild(divSizePriceCntr);
+
+      const divSizeQtyCntr = document.createElement("div");
+      classes = ["flex-[30%]"];
+      divSizeQtyCntr.classList.add(...classes);
+      // Size quantity
+      const inputSizeQty = document.createElement("input");
+      classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]", "menu-size-quantity"];
+      inputSizeQty.classList.add(...classes);
+      inputSizeQty.type = "text";
+      inputSizeQty.id = "menu-size-quantity";
+      const lblSizeQty = document.createElement("label");
+      classes = ["text-primaryColor", "font-extrabold"];
+      lblSizeQty.classList.add(...classes);
+      lblSizeQty.textContent = "Size Quantity";
+      lblSizeQty.for = "menu-size-quantity";
+      divSizeQtyCntr.appendChild(lblSizeQty);
+      divSizeQtyCntr.appendChild(inputSizeQty); 
+      divMenuVariantDetChildCntr.appendChild(divSizeQtyCntr);
+      divVariantsCntr.appendChild(divMenuVariantDetChildCntr)
+      divMenuVariant.appendChild(divVariantsCntr);
+
+      divDeleteSvgCntr.addEventListener("click", () => {
+        // Since not added pa remove DOM lang
+        divVariantsCntr.removeChild(divMenuVariantDetChildCntr);
+        // const selectSizeNameRef = document.getElementById("menu-size-name");
+        // deleteVariant(divVariantsCntr, divMenuVariantDetChildCntr, selectSizeNameRef.value);
+      });
+    });
+
+    // Select tag variant functionality
+    selectMenuVariant.addEventListener("change", (event) => {
+      const value = (event.target.value == "true") ? true : false;
+
+      if(value){
+        divVariantsCntr.classList.add("flex");
+        divVariantsCntr.classList.remove("hidden");
+        inputMenuPrice.classList.add("border-errorAlert");
+        inputMenuPrice.classList.remove("border-primaryColor");
+        inputMenuPrice.value = "";
+        inputMenuQty.classList.add("border-errorAlert");
+        inputMenuQty.classList.remove("border-primaryColor");
+        inputMenuQty.value = "";
+      }else{
+        divVariantsCntr.classList.add("hidden");
+        divVariantsCntr.classList.remove("flex");
+        inputMenuPrice.classList.remove("border-errorAlert");
+        inputMenuPrice.classList.add("border-primaryColor");
+        inputMenuQty.classList.remove("border-errorAlert");
+        inputMenuQty.classList.add("border-primaryColor");
+      }
+    });
+
+    // Form buttons
+    const divButtonCntr = document.createElement("div");
+    classes = ["col-span-full", "flex", "gap-[.3rem]"];
+    divButtonCntr.classList.add(...classes);
+    const btnSave = createOkButton("Save");
+    btnSave.type = "button";
+    divButtonCntr.appendChild(btnSave);
+    const cancelBtn = createCancelBtn();
+    cancelBtn.type = "button";
+    divButtonCntr.appendChild(cancelBtn);
+    formAddPopup.appendChild(divButtonCntr);
+
+    divAddPopupCntr.appendChild(formAddPopup);
+    divAddPopup.appendChild(divAddPopupCntr);
+    body.appendChild(divAddPopup);
+
+    btnSave.addEventListener("click", async () => {
+      let variantSizes = [];
+      let menuName = inputMenuName.value.trim();
+      let menuShortDesc = inputMenuShortDesc.value.trim();
+      let menuPrice = (inputMenuPrice.value.trim() == "") ? 0 : inputMenuPrice.value.trim();
+      let menuQty = (inputMenuQty.value.trim() == "") ? 0 : inputMenuQty.value.trim();
+      let menuCategory = selectMenuCat.value;
+      let menuImg = inputMenuImg.files[0];
+      let menuWithVariant = (selectMenuVariant.value == "true") ? true : false;
+
+      if((menuName == ""|| menuShortDesc == "" || menuPrice == "" || menuQty == "" || menuCategory == "" || menuImg == null) && !menuWithVariant){
+        alert("Please fill all missing fields");
+        return;
+      }
+
+      const variantItemCntr = document.getElementById("add-popup-menu-variant");
+      const variantItem = document.getElementsByClassName("variant-item-cntr");
+      const variantItemPrice = variantItemCntr.getElementsByClassName("menu-size-price");
+      const variantItemQty = variantItemCntr.getElementsByClassName("menu-size-quantity");
+      const variantItemSelect = variantItemCntr.getElementsByTagName("select");
+      
+      if(selectMenuVariant.value == "true" && variantItem.length == 0){
+        alert("Please include at least one variant or make it false.")
+        return;
+      }
+      
+      if(menuWithVariant){
+        Array.from(variantItemPrice).forEach((item, index) => {
+          if(item.value.trim() == "" || variantItemSelect[index].value.trim() == ""){
+            alert("Please fill missing fields on variant options.")
+            return;
+          }else{
+            let sizeQty = (variantItemQty[index].value.trim() == "" || variantItemQty[index].value.trim() == null) ? 0 : variantItemQty[index].value.trim(); 
+            variantSizes.push(
+              {
+                sizeId: variantItemSelect[index].value.trim(),
+                sizePrice :item.value.trim(),
+                sizeQuantity: sizeQty
+              }
+            )
+          }
+        });
+      }
+
+      const foodRequest = {
+        foodName: menuName,
+        shortFoodDesc: menuShortDesc,
+        price: menuPrice,
+        quantity: menuQty,
+        category: menuCategory,
+        withVariant: menuWithVariant,
+        variants: variantSizes
+      }
+
+      const foodPostRequestFormData = new FormData();
+      const jsonBlob = new Blob([JSON.stringify(foodRequest)], {type: "application/json"});
+      foodPostRequestFormData.append("food", jsonBlob);
+      foodPostRequestFormData.append("image", menuImg);
+
+      console.log(typeof(foodPostRequestFormData.get("variants")));
+
+      const response = await foodService.postFood(foodPostRequestFormData);
+      if(response.status == 200 || response.status == 201){
+        alert("Added successfully");
+        window.location.reload();
+      }
+    });
+
+    cancelBtn.addEventListener("click", () => {
+      body.removeChild(divAddPopup);
+    });
   });
   divFRTS.appendChild(btnAddMenu);
   
@@ -56,7 +413,7 @@ export async function renderMenu(container){
   divFRTS.appendChild(btnAddVariant);
   
   const btnAddCategory = document.createElement("button");
-  btnAddCategory.textContent = "ADD MENU";
+  btnAddCategory.textContent = "ADD CATEGORY";
   classes = ["text-xs", "border-1", "p-2", "rounded-sm", "border-dividerColor", "bg-white", "text-primaryColor", "leading-none", "cursor-pointer", "hover:bg-primaryColor", "hover:text-primaryBg"];
   btnAddCategory.classList.add(...classes);
   btnAddCategory.addEventListener("click", () => {
@@ -245,7 +602,7 @@ export async function renderMenu(container){
         }
         
         const actionBtnCntr = document.createElement("div");
-        classes = ["flex", "h-[100%]", "items-end"];
+        classes = ["flex", "flex-col", "gap-[.3rem]", "h-[100%]", "items-end"];
         actionBtnCntr.classList.add(...classes);
         const actionBtn = document.createElement("button");
         actionBtn.textContent = "Edit";
@@ -266,6 +623,12 @@ export async function renderMenu(container){
           const divEditPopupCntr = document.createElement("div");
           classes = ["flex", "flex-col", "gap-[.6rem]", "w-[30%]", "h-max","bg-primaryBg", "p-2", "rounded-md", "shadow-md"];
           divEditPopupCntr.classList.add(...classes);
+
+          const spanEditTitle = document.createElement("span");
+          classes = ["text-3xl", "font-extrabold", "text-primaryColor"];
+          spanEditTitle.classList.add(...classes);
+          spanEditTitle.textContent = "Edit food";
+          divEditPopupCntr.appendChild(spanEditTitle);
 
           const formMenuDetails = document.createElement("form");     
           classes = ["flex", "flex-col", "gap-[.5rem]", "text-black"];
@@ -372,8 +735,6 @@ export async function renderMenu(container){
           classes = ["hidden", "flex-col", "gap-[.3rem]"];
           divMenuVariantDetCntr.id = "edit-popup-menu-variant"
           divMenuVariantDetCntr.classList.add(...classes); 
-          
-          const sizes = await sizeService.getSizes();
 
           // Add more button.
           const addMoreBtn = document.createElement("button");
@@ -609,7 +970,7 @@ export async function renderMenu(container){
           classes = ["col-span-full", "flex", "gap-[.3rem]"];
           divBtnCntr.classList.add(...classes);
 
-          const btnOk = createOkButton();
+          const btnOk = createOkButton("Update");
           btnOk.type = "button";
           divBtnCntr.appendChild(btnOk);
 
@@ -674,8 +1035,6 @@ export async function renderMenu(container){
               }
             });
 
-            console.log(foodPatchRequest.variants);
-
             const urlChecker = new URL(window.location.href);
             const searchFoodIdValue = urlChecker.searchParams.get("foodId");
             if(searchFoodIdValue != null || searchFoodIdValue != ""){
@@ -692,7 +1051,7 @@ export async function renderMenu(container){
           
           btnCancel.addEventListener("click", () => {
             removeParams();
-            window.location.reload();
+            // window.location.reload();
             body.removeChild(divEditPopup);
           });
         });
@@ -702,7 +1061,68 @@ export async function renderMenu(container){
         divMenuCntr.appendChild(spanStatus);
         divMenuCntr.appendChild(divNameNPriceCntr);
         divMenuCntr.appendChild(divInventoryCntr);
+        
+        const btnDeleteFood = document.createElement("button");
+        classes = ["w-full", "bg-errorAlert", "text-primaryBg", "font-bold", "rounded-md", "py-[.2rem]", "cursor-pointer", "hover:bg-errorAlert/50"];
+        btnDeleteFood.classList.add(...classes);
+        btnDeleteFood.textContent = "Delete";
+        actionBtnCntr.appendChild(btnDeleteFood);
         divMenuCntr.appendChild(actionBtnCntr);
+
+        btnDeleteFood.addEventListener("click", () => {
+          // No Functionality yet :REMOVE-COMMENT
+          const url = new URL(window.location.href);
+          url.searchParams.set("foodId", element.id);
+          window.history.pushState({}, "", url);
+
+          const divDeleteConfirmationPopup = document.createElement("div");
+          classes = ["flex", "justify-center", "items-center", "absolute", "w-full", "h-full", "bg-secondaryBg/50", "text-primaryBg", "z-[3]"];
+          divDeleteConfirmationPopup.classList.add(...classes);
+          
+          const divDeleteConfirmationPopupCntr = document.createElement("div");
+          classes = ["flex", "flex-col", "gap-[.6rem]", "w-[30%]", "h-max","bg-primaryBg", "p-2", "rounded-md", "shadow-md"];
+          divDeleteConfirmationPopupCntr.classList.add(...classes);
+          
+          const spanDeleteCaption = document.createElement("span");
+          classes = ["text-3xl", "font-extrabold", "text-primaryColor"];
+          spanDeleteCaption.classList.add(...classes);
+          spanDeleteCaption.textContent = "Are you sure you want to delete this?";
+          divDeleteConfirmationPopupCntr.appendChild(spanDeleteCaption);
+
+          const divDeleteBtnCntr = document.createElement("div");
+          classes = ["flex", "gap-[.3rem]"];
+          divDeleteBtnCntr.classList.add(...classes);
+          const btnOk = createOkButton();
+          btnOk.type = "button";
+          divDeleteBtnCntr.appendChild(btnOk);
+          const btnCancel = createCancelBtn();
+          btnCancel.type = "button";
+          divDeleteBtnCntr.appendChild(btnCancel);
+          divDeleteConfirmationPopupCntr.appendChild(divDeleteBtnCntr);
+          
+          divDeleteConfirmationPopup.appendChild(divDeleteConfirmationPopupCntr);
+          body.appendChild(divDeleteConfirmationPopup);
+
+          btnOk.addEventListener("click", async () => {
+            const urlChecker = new URL(window.location.href);
+            const foodIdValue = urlChecker.searchParams.get("foodId");
+
+            if(foodIdValue != null){
+              const response = await foodService.deleteFood(foodIdValue);
+              if(response.status == 200 || response.status == 201){
+                alert("Deleted successfully!");
+                window.location.reload();
+              }else
+                alert("There was a problem during deletion");
+            }else{
+              alert("There was a problem. Cannot perform deletion");
+            }
+          });
+
+          btnCancel.addEventListener("click", () => {
+            body.removeChild(divDeleteConfirmationPopup);
+          });
+        });
 
         divFC.appendChild(divMenuCntr);
       });
@@ -800,7 +1220,6 @@ export async function renderMenu(container){
       }else{
         alert("There was a problem removing variant. Please try again");
       }
-
     });
     
     btnCancel.addEventListener("click", () => {
