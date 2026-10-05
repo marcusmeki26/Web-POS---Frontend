@@ -3,9 +3,9 @@ import { getAccessToken } from './authservice';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_BE_API_BASE_PATH_V1,
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  // headers: {
+  //   'Content-Type': 'application/json'
+  // }
 });
 
 // Middleware: Automatically grabs JWT from storage and attaches it to headers
