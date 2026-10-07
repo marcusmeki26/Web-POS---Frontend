@@ -12,9 +12,7 @@ export const foodService = {
   },
   getImage: async (foodId) => { // Returns -> The image based on its food id
     const response = await api.get(`${foodApi}/image/${foodId}`, { responseType: 'blob' });
-
-    const imageURL = URL.createObjectURL(response.data); // Converts blob into a string to let image handle it
-    return imageURL;
+    return response;
   },
   postFood: async (postRequest) => {
     const response = await api.post(`${foodApi}`, postRequest);

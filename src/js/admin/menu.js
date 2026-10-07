@@ -527,14 +527,22 @@ export async function renderMenu(container){
         
         // Image
         const img = document.createElement("img");
-        classes = ["rounded-sm"];
-        // Default to sample first
-        // img.src="/sample_img.jpg";
-        const imageValue = await foodService.getImage(element.id);
-        console.log(imageValue);
-        img.src = imageValue;
+        let imageURL;
+        await foodService.getImage(element.id)
+        .then(response => {
+          if(response.status == 200 || response.status == 201){
+              imageURL = URL.createObjectURL(response.data);
+
+              img.src = imageURL;
+            }
+          })
+          .catch(error => {
+            console.error("Unable to load image: " + error);
+            img.src = "/sample_img.jpg";
+          });
         img.style.width = "100%";
         img.style.height = "130px";
+        classes = ["rounded-sm"];
         img.classList.add(...classes);
         
         // Status 

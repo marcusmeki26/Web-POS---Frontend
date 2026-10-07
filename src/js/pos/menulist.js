@@ -159,15 +159,24 @@ async function renderMenuList(container){
         divMenuCntr.classList.add(...classes);
         
         // Image
-        const img = document.createElement("img");
+        const imgMenu = document.createElement("img");
+        let imageURL = "";
+        await foodService.getImage(element.id)
+        .then(response => {
+          if(response.status == 200 || response.status == 201){
+            imageURL = URL.createObjectURL(response.data); // Converts blob into a string to let image tag handle it
+            
+            imgMenu.src = imageURL;
+          }
+        })
+        .catch(error => {
+          console.error("Unable to load image: " + error);
+          imgMenu.src = "/sample_img.jpg";
+        });
+        imgMenu.style.width = "100%";
+        imgMenu.style.height = "130px";
         classes = ["rounded-sm"];
-        // Default to sample first
-        // img.src="/sample_img.jpg";
-        const imagePath = await foodService.getImage(element.id);
-        img.src = imagePath;
-        img.style.width = "100%";
-        img.style.height = "130px";
-        img.classList.add(...classes);
+        imgMenu.classList.add(...classes);
         
         // Status 
         const spanStatus = document.createElement("span");
@@ -286,7 +295,8 @@ async function renderMenuList(container){
                     imgMD.style.width = "20%";
                     // imgMD.style.height = "100%";
                     // imgMD.src = "/sample_img.jpg";
-                    imgMD.src = imagePath;
+                    imgMD.src = imageURL;
+                    console.log("test: " + imageURL)
                     imgMD.classList.add(...classes);
       
                     // Right Side Container
@@ -505,7 +515,8 @@ async function renderMenuList(container){
                 imgMD.style.width = "20%";
                 // imgMD.style.height = "100%";
                 // imgMD.src = "/sample_img.jpg";
-                imgMD.src = imagePath;
+                imgMD.src = imageURL;
+                console.log("test: " + imageURL);
                 imgMD.classList.add(...classes);
   
                 // Right Side Container
@@ -690,7 +701,7 @@ async function renderMenuList(container){
           }
         });
 
-        divMenuCntr.appendChild(img);
+        divMenuCntr.appendChild(imgMenu);
         divMenuCntr.appendChild(spanStatus);
         divMenuCntr.appendChild(divNameNPriceCntr);
         divMenuCntr.appendChild(btnATC);
@@ -1048,12 +1059,19 @@ async function renderMenuList(container){
 
       // Image
       const imgMD = document.createElement("img"); 
+      await foodService.getImage(element.number)
+        .then(response => {
+          if(response.status == 200 || response.status == 201){
+            const imageURL = URL.createObjectURL(response.data);
+            imgMD.src = imageURL;
+          }
+        })
+        .catch(error => {
+          console.error("Unable to load image: " + error);
+          imgMD.src = "/sample_img.jpg";
+        });
       classes = ["flex-1", "rounded-sm"];
       imgMD.style.width = "20%";
-      // imgMD.style.height = "100%";
-      // imgMD.src = "/sample_img.jpg";
-      // console.log(element.number);
-      imgMD.src = await foodService.getImage(element.number);
       imgMD.classList.add(...classes);
 
       // Right Side Container
