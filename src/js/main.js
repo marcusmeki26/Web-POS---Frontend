@@ -1,6 +1,9 @@
 import { processCreds } from "./utilities";
 
+// FIX LOGIN ADD LIKE DUN SA BANKING APP NA THEN .. CATCH BLOCK :REMOVE-COMMENT
+
 const loginForm = document.getElementById("login-form");
+const projBasePath = import.meta.env.VITE_ROOT_PROJECT_PATH; 
 
 loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -13,5 +16,15 @@ loginForm.addEventListener('submit', async (event) => {
     return;
   }
 
-  await processCreds({username, password});
+  await processCreds({username, password})
+    .then(response => {
+      if(response.status == 200 || response.status == 201){
+        window.location.href = `${projBasePath}/landingpage`;
+      }
+    })
+    .catch(error => {
+      alert(`${error.response.data.code}\n
+                ${error.response.data.message}`);
+      // alert(error);
+    });
 });
