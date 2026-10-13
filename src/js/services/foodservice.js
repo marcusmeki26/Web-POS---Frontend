@@ -8,7 +8,7 @@ export const foodService = {
   },
   getMenuListByCategory: async (categoryType) => { // Returns -> A list of food by category
     const response = await api.get(`${foodApi}?category=${categoryType}`);
-    return response.data;
+    return response;
   },
   getImage: async (foodId) => { // Returns -> The image based on its food id
     const response = await api.get(`${foodApi}/image/${foodId}`, { responseType: 'blob' });
