@@ -889,10 +889,11 @@ async function renderMenuList(container){
                   number: order.number,
                   quantity: order.quantity,
                   sizeId: order.sizeId,
-                  tableNo: lSelectBTNS.selectedIndex
+                  tableId: lSelectBTNS.selectedIndex
                 });
               });
-
+              
+              console.log(orders);
               response = await orderService.patchOrdersByReceiptNo(receiptNo, orders);
             }else{ // If not existing request
               patchRequest = {
@@ -903,13 +904,13 @@ async function renderMenuList(container){
 
               response = await orderService.patchOrderByReceiptNo(receiptNo, patchRequest);
             }
-
             
-            if(response.status === 200){
+            if(response.status === 204){
               alert(`Order is placed on table ${lSelectBTNS.selectedIndex}`);
               window.location.reload();
             }else{
-              alert("There was a problem updating the record. Please try again");
+              console.log(response);
+              // alert("There was a problem updating the record. Please try again");
             }
           }
         }else if(btnAddToTable.getAttribute("order-type") === "2"){ // TAKE OUT
