@@ -384,13 +384,52 @@ export async function renderMenu(container){
       foodPostRequestFormData.append("food", jsonBlob);
       foodPostRequestFormData.append("image", menuImg);
 
-      // console.log(typeof(foodPostRequestFormData.get("variants")));
+      await foodService.postFood(foodPostRequestFormData)
+        .then(response => {
+          if(response.status == 200){
+            const body = document.getElementById("body");
 
-      const response = await foodService.postFood(foodPostRequestFormData);
-      if(response.status == 200 || response.status == 201){
-        alert("Added successfully");
-        window.location.reload();
-      }
+            body.removeChild(divAddPopup);
+
+            const divAdddedPopup = document.createElement("div");
+            classes = ["flex", "justify-center", "items-center", "absolute", "w-full", "h-full", "bg-secondaryBg/50", "text-primaryColor", "z-[3]"];
+            divAdddedPopup.classList.add(...classes);
+
+            const divAdddedPopupCntr = document.createElement("div");
+            classes = ["flex", "flex-col", "gap-[.6rem]", "w-[30%]", "h-max","bg-primaryBg", "p-2", "rounded-md", "shadow-md"];
+            divAdddedPopupCntr.classList.add(...classes);
+
+            const h1Title = document.createElement("h1");
+            classes = ["text-3xl", "font-extrabold"];
+            h1Title.classList.add(...classes);
+            h1Title.textContent = "Added successfully!";
+            divAdddedPopupCntr.appendChild(h1Title);
+
+            // Food name
+            const spanFoodName = document.createElement("span");
+            spanFoodName.textContent = "Food name: " + response.data.foodName;
+            divAdddedPopupCntr.appendChild(spanFoodName);
+
+            // Short Food name Description
+            const spanShortFoodDesc = document.createElement("span");
+            spanShortFoodDesc.textContent = "Short Description: " + response.data.shortFoodDesc;
+            divAdddedPopupCntr.appendChild(spanShortFoodDesc);
+
+            const okBtn = createOkButton();
+            okBtn.type = "button";
+            divAdddedPopupCntr.appendChild(okBtn);
+
+            divAdddedPopup.appendChild(divAdddedPopupCntr);
+            body.appendChild(divAdddedPopup);
+
+            okBtn.addEventListener("click", () => {
+              window.location.reload();
+            });
+          }
+        })
+        .catch(error => {
+          console.error("There was a during adding of food.");
+        });
     });
 
     cancelBtn.addEventListener("click", () => {
@@ -456,17 +495,21 @@ export async function renderMenu(container){
     btn.classList.add(...classes);
     btn.id = category.categoryType.toLowerCase().replace(/ /g, "-");
 
-    btn.addEventListener("click", async () => {
-      const menuList = await foodService.getMenuListByCategory(category.categoryType);
-      
+    btn.addEventListener("click", async () => {    
       moveActiveBtn(btn);
 
       const url = new URL(window.location.href);
       url.searchParams.set("category", category.categoryType);
-
       window.history.pushState({}, "", url);
 
-      displayMenuList(menuList);
+      await foodService.getMenuListByCategory(category.categoryType)
+        .then(response => {
+          if(response.status == 200)
+            displayMenuList(response.data);
+        })
+        .catch(error => {
+          console.error("ERROR: " + error);
+        });
     });
 
     const span = document.createElement("span");
@@ -645,11 +688,13 @@ export async function renderMenu(container){
           // Menu name
           const divMenuNameCntr = document.createElement("div");
           const inputMenuName = document.createElement("input");
-          classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
+          classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]", "outer"];
           inputMenuName.classList.add(...classes);
           inputMenuName.id = "menu-name";
+          inputMenuName.name = "name";
           inputMenuName.type = "text";
           inputMenuName.value = element.foodName;
+          inputMenuName.defaultValue = element.foodName;
           const lblMenuName = document.createElement("label");
           classes = ["text-primaryColor", "font-extrabold"];
           lblMenuName.classList.add(...classes);
@@ -661,11 +706,13 @@ export async function renderMenu(container){
           
           const divMenuShortDesc = document.createElement("div");
           const inputMenuShortDesc = document.createElement("input");
-          classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
+          classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]", "outer"];
           inputMenuShortDesc.classList.add(...classes);
           inputMenuShortDesc.id = "menu-short-desc";
           inputMenuShortDesc.type = "text";
+          inputMenuShortDesc.name = "shortDesc";
           inputMenuShortDesc.value = element.shortFoodDesc;
+          inputMenuShortDesc.defaultValue = element.shortFoodDesc;
           const lblMenuShortDesc = document.createElement("label");
           classes = ["text-primaryColor", "font-extrabold"];
           lblMenuShortDesc.classList.add(...classes);
@@ -678,12 +725,15 @@ export async function renderMenu(container){
           // Menu price
           const divMenuPriceCntr = document.createElement("div");
           const inputMenuPrice = document.createElement("input");
-          classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
+          classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]", "outer"];
           inputMenuPrice.classList.add(...classes);
           inputMenuPrice.id = "menu-price";
+          inputMenuPrice.name = "price";
           inputMenuPrice.type = "text";
-          if(!element.withVariant)
+          if(!element.withVariant){
             inputMenuPrice.value = element.price;
+            inputMenuPrice.defaultValue = element.price;
+          }
           const lblMenuPrice = document.createElement("label");
           classes = ["text-primaryColor", "font-extrabold"];
           lblMenuPrice.classList.add(...classes);
@@ -696,12 +746,15 @@ export async function renderMenu(container){
           // Menu Quantity
           const divMenuQty = document.createElement("div");
           const inputMenuQty = document.createElement("input");
-          classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
+          classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]", "outer"];
           inputMenuQty.classList.add(...classes);
           inputMenuQty.id = "menu-quantity";
+          inputMenuQty.name = "quantity";
           inputMenuQty.type = "text";
-          if(!element.withVariant)
+          if(!element.withVariant){
             inputMenuQty.value = element.quantity;
+            inputMenuQty.defaultValue = element.quantity;
+          }
           const lblMenuQty = document.createElement("label");
           classes = ["text-primaryColor", "font-extrabold"];
           lblMenuQty.classList.add(...classes);
@@ -717,6 +770,7 @@ export async function renderMenu(container){
           classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
           selectMenuCat.classList.add(...classes);
           selectMenuCat.id = "menu-category";
+          selectMenuCat.name = "category";
           categories.forEach(category  => {
             if(element.categoryType == category.code){
               selectMenuCat.add(new Option(category.code, category.code, true, true));
@@ -804,6 +858,7 @@ export async function renderMenu(container){
             inputSizePrice.classList.add(...classes);
             inputSizePrice.type = "text";
             inputSizePrice.id = "menu-size-price";
+            inputSizePrice.name = "sizePrice";
             const lblSizePrice = document.createElement("label");
             classes = ["text-primaryColor", "font-extrabold"];
             lblSizePrice.classList.add(...classes);
@@ -823,6 +878,7 @@ export async function renderMenu(container){
             inputSizeQty.classList.add(...classes);
             inputSizeQty.type = "text";
             inputSizeQty.id = "menu-size-quantity";
+            inputSizeQty.name = "sizeQuantity";
             const lblSizeQty = document.createElement("label");
             classes = ["text-primaryColor", "font-extrabold"];
             lblSizeQty.classList.add(...classes);
@@ -894,6 +950,8 @@ export async function renderMenu(container){
             inputSizePrice.type = "text";
             inputSizePrice.id = "menu-size-price " + variant.productVariant.size.sizeName;
             inputSizePrice.value = variant.productVariant.price;
+            inputSizePrice.defaultValue = variant.productVariant.price;
+            inputSizePrice.name = "sizePrice";
             const lblSizePrice = document.createElement("label");
             classes = ["text-primaryColor", "font-extrabold"];
             lblSizePrice.classList.add(...classes);
@@ -913,6 +971,8 @@ export async function renderMenu(container){
             inputSizeQty.type = "text";
             inputSizeQty.id = "menu-size-quantity";
             inputSizeQty.value = variant.quantity;
+            inputSizeQty.defaultValue = variant.quantity;
+            inputSizeQty.name = "sizeQuantity";
             const lblSizeQty = document.createElement("label");
             classes = ["text-primaryColor", "font-extrabold"];
             lblSizeQty.classList.add(...classes);
@@ -930,6 +990,7 @@ export async function renderMenu(container){
           classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]"];
           selectMenuVariant.classList.add(...classes);
           selectMenuVariant.id = "menu-variant";
+          selectMenuVariant.name = "withVariant";
           const lblMenuVariant = document.createElement("label");
           classes = ["text-primaryColor", "font-extrabold"];
           lblMenuVariant.classList.add(...classes);
@@ -993,6 +1054,7 @@ export async function renderMenu(container){
 
           let variantSizes = [];
           btnOk.addEventListener("click", async () => {
+            let isValid = true;
             let editName = (inputMenuName.value.trim() == "" || inputMenuName.value.trim() == null) ? "" : inputMenuName.value.trim();
             let editPrice = (inputMenuPrice.value.trim() == "" || inputMenuPrice.value.trim() == null) ? 0 : inputMenuPrice.value.trim();
             let editShortDesc = (inputMenuShortDesc.value.trim() == "" || inputMenuShortDesc.value.trim() == null) ? "" : inputMenuShortDesc.value.trim();
@@ -1000,16 +1062,29 @@ export async function renderMenu(container){
             let withVariant = (selectMenuVariant.value == "true") ? true : false;
             let category = selectMenuCat.value;
             
-            const foodPatchRequest = {
-              name: editName,
-              price: editPrice,
-              shortDesc: editShortDesc,
-              quantity: editQty,
-              withVariant: withVariant,
-              category: category,
-              variants: variantSizes
-            };
+            const foodPatchRequest = {};
+            
+            // Checks for any dirty input
+            const formInputs = formMenuDetails.querySelectorAll("input.outer");
+            formInputs.forEach(element => {
+              if(element.value.trim() !== element.defaultValue){
+                foodPatchRequest[element.name] = element.value;    
+              }
+            });
 
+            // Checks for any dirty select
+            const selectMenuCategoryRef = document.getElementById("menu-category");
+            const selectedValueCategory = selectMenuCategoryRef.options[selectMenuCategoryRef.selectedIndex];
+            if(!selectedValueCategory.defaultSelected)
+              foodPatchRequest[selectMenuCategoryRef.name] = selectedValueCategory.value;
+            
+            // Checks for any dirty select
+            const selectMenuVariantRef = document.getElementById("menu-variant");
+            const selectedValueVariant = selectMenuVariantRef.options[selectMenuVariantRef.selectedIndex];
+            if(!selectedValueVariant.defaultSelected)
+              foodPatchRequest[selectMenuVariantRef.name] = selectedValueVariant.value;
+
+            
             if((editName == ""|| editPrice == "" || editShortDesc == "" || editQty == "" || category == "") && !withVariant){
               alert("Please fill all missing fields");
               return;
@@ -1029,32 +1104,87 @@ export async function renderMenu(container){
             Array.from(variantItemPrice).forEach((item, index) => {
               if(item.value.trim() == "" || variantItemSelect[index].value.trim() == ""){
                 alert("Please fill missing fields on variant options.")
+                isValid = false;
                 return;
               }else{
-                let editInputSizeQty = (variantItemQty[index].value.trim() == "" || variantItemQty[index].value.trim() == null) ? 0 : variantItemQty[index].value.trim(); 
-                variantSizes.push(
-                  {
-                    sizeId: variantItemSelect[index].value.trim(),
-                    sizePrice :item.value.trim(),
-                    sizeQuantity: editInputSizeQty,
-                    sizeOldId: variantItemSelect[index].getAttribute("data-old-value")
-                  }
-                )
+                let isChanged = false;
+                let sizeQty = 0;
+                let variantJson = {};
+
+                if(variantItemQty[index].value.trim() !== variantItemQty[index].defaultValue){
+                  sizeQty = (variantItemQty[index].value.trim() == "" || variantItemQty[index].value.trim() == null) ? 0 : variantItemQty[index].value.trim(); 
+                  variantJson[variantItemQty[index].name] = sizeQty;
+                  isChanged = true;
+                }
+
+                if(item.value.trim() !== item.defaultValue){
+                  variantJson[item.name] = item.value.trim();
+                  isChanged = true;
+                }
+
+                const selectedSize = variantItemSelect[index].options[variantItemSelect[index].selectedIndex];
+                if(selectedSize.value !== variantItemSelect[index].getAttribute("data-old-value"))
+                  isChanged = true;
+                
+                if(isChanged){
+                  variantJson["sizeId"] = variantItemSelect[index].value;
+                  variantJson["sizeOldId"] = variantItemSelect[index].getAttribute("data-old-value");
+                  variantSizes.push(
+                    variantJson 
+                  );
+                }
               }
             });
 
-            const urlChecker = new URL(window.location.href);
-            const searchFoodIdValue = urlChecker.searchParams.get("foodId");
-            if(searchFoodIdValue != null || searchFoodIdValue != ""){
-              const response = await foodService.patchFoodById(searchFoodIdValue, foodPatchRequest);
-              if(response.status == 200 || response.status == 201){
-                alert("Updated successfully.")
-                window.location.reload();
+            if(variantSizes.length > 0)
+              foodPatchRequest["variants"] = variantSizes;
+            
+            if(isValid){
+              console.log(foodPatchRequest);
+
+              const urlChecker = new URL(window.location.href);
+              const searchFoodIdValue = urlChecker.searchParams.get("foodId");
+              if(foodPatchRequest.constructor === Object && Object.keys(foodPatchRequest).length > 0 && (searchFoodIdValue != null || searchFoodIdValue != "")){
+                await foodService.patchFoodById(searchFoodIdValue, foodPatchRequest)
+                  .then(response => {
+                    if(response.status == 200){
+                      const body = document.getElementById("body");
+  
+                      body.removeChild(divEditPopup);
+  
+                      const divEditedPopup = document.createElement("div");
+                      classes = ["flex", "justify-center", "items-center", "absolute", "w-full", "h-full", "bg-secondaryBg/50", "text-primaryColor", "z-[3]"];
+                      divEditedPopup.classList.add(...classes);
+  
+                      const divEditedPopupCntr = document.createElement("div");
+                      classes = ["flex", "flex-col", "gap-[.6rem]", "w-[30%]", "h-max","bg-primaryBg", "p-2", "rounded-md", "shadow-md"];
+                      divEditedPopupCntr.classList.add(...classes);
+  
+                      const h1Title = document.createElement("h1");
+                      classes = ["text-3xl", "font-extrabold"];
+                      h1Title.classList.add(...classes);
+                      h1Title.textContent = "Edited successfully!";
+                      divEditedPopupCntr.appendChild(h1Title);
+                      
+                      const okBtn = createOkButton();
+                      okBtn.type = "button";
+                      divEditedPopupCntr.appendChild(okBtn);
+
+                      divEditedPopup.appendChild(divEditedPopupCntr);
+                      body.appendChild(divEditedPopup);
+
+                      okBtn.addEventListener("click", () => {
+                        window.location.reload();
+                      });
+                    }
+                  })
+                  .catch(error => {
+                    console.error("Cannot perform update.");
+                  });
               }else{
-                alert("Something happened. Unable to update. Please try again");
+                alert("No field to update.");
               }
-            }else
-              alert("Cannot perform an update. Please try again.");
+            }
           });
           
           btnCancel.addEventListener("click", () => {
@@ -1115,12 +1245,42 @@ export async function renderMenu(container){
             const foodIdValue = urlChecker.searchParams.get("foodId");
 
             if(foodIdValue != null){
-              const response = await foodService.deleteFood(foodIdValue);
-              if(response.status == 200 || response.status == 201){
-                alert("Deleted successfully!");
-                window.location.reload();
-              }else
-                alert("There was a problem during deletion");
+              await foodService.deleteFood(foodIdValue)
+                .then(response => {
+                  if(response.status == 204){
+                    const body = document.getElementById("body");
+  
+                    body.removeChild(divDeleteConfirmationPopup);
+
+                    const divDeletePopup = document.createElement("div");
+                    classes = ["flex", "justify-center", "items-center", "absolute", "w-full", "h-full", "bg-secondaryBg/50", "text-primaryColor", "z-[3]"];
+                    divDeletePopup.classList.add(...classes);
+
+                    const divDeletePopupCntr = document.createElement("div");
+                    classes = ["flex", "flex-col", "gap-[.6rem]", "w-[30%]", "h-max","bg-primaryBg", "p-2", "rounded-md", "shadow-md"];
+                    divDeletePopupCntr.classList.add(...classes);
+
+                    const h1Title = document.createElement("h1");
+                    classes = ["text-3xl", "font-extrabold"];
+                    h1Title.classList.add(...classes);
+                    h1Title.textContent = "Deleted successfully!";
+                    divDeletePopupCntr.appendChild(h1Title);
+                    
+                    const okBtn = createOkButton();
+                    okBtn.type = "button";
+                    divDeletePopupCntr.appendChild(okBtn);
+
+                    divDeletePopup.appendChild(divDeletePopupCntr);
+                    body.appendChild(divDeletePopup);
+
+                    okBtn.addEventListener("click", () => {
+                      window.location.reload();
+                    });
+                  }
+                })
+                .catch(error => {
+                  console.error("There was a problem during deletion of food " + error);
+                });
             }else{
               alert("There was a problem. Cannot perform deletion");
             }
@@ -1218,14 +1378,18 @@ export async function renderMenu(container){
       const searchSizeIdValue = urlChecker.searchParams.get("sizeId");
 
       if(searchFoodIdValue != null && searchSizeIdValue != null){
-        const response = await foodService.deleteVariant(searchFoodIdValue, searchSizeIdValue);
-        console.log(response);
-        if(response.status == 200 || response.status == 201){
-          pMenuVariantParent.removeChild(pMenuVariantChild);
-          body.removeChild(divConfirmationPopup);
-        }
+        await foodService.deleteVariant(searchFoodIdValue, searchSizeIdValue)
+          .then(response => {
+            if(response.status == 204){
+              pMenuVariantParent.removeChild(pMenuVariantChild);
+              body.removeChild(divConfirmationPopup);
+            }
+          })
+          .catch(error => {
+            console.error("There was a during adding of food.");
+          });
       }else{
-        alert("There was a problem removing variant. Please try again");
+        alert("Please fill missing fields");
       }
     });
     
