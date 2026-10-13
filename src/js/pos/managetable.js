@@ -310,9 +310,9 @@ async function renderManageTable(container){
           placed: false,
           orderType: null
         };
-
+        
         const response = await orderService.patchRetrieveOrderByReceiptNo(receiptNo, patchRequest);
-        if(response.status === 200){
+        if(response.status === 204){
           alert(`Receipt No# ${receiptNo} was retrieved. Please check in menu list tab`);
           window.location.reload();
         }else{
