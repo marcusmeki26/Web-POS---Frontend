@@ -8,7 +8,8 @@ import { removeParams } from './utilities.js';
 const basePath = import.meta.env.VITE_ROOT_PROJECT_PATH;
 let classes;
 
-await authService.refresh();
+// Think of a way on how to solve this since during href or reload in-memory value of access_token is erased :REMOVE-COMMENT
+await authService.refresh(); 
 const roles = getRole();
 
 populateNavItem();
