@@ -5,8 +5,9 @@ import { createOkButton, createCancelBtn, removeParams } from '../utilities';
 
 // No add variant functionality :REMOVE-COMMENT
 // No add category functionlity :REMOVE-COMMENT
+// Move variant and category on its own page :REMOVE-COMMENT
 
-export async function renderMenu(container){
+export async function renderFood(container){
   const formatAmount = new Intl.NumberFormat("en-PH", {
     style: "currency",
     currency: "PHP"
