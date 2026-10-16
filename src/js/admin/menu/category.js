@@ -1,5 +1,5 @@
-import { categoryService } from "../services/categoryservice";
-import { createCancelBtn, createInputText, createLabel, createOkButton, removeParams } from "../utilities";
+import { categoryService } from "../../services/categoryservice";
+import { createCancelBtn, createInputText, createLabel, createOkButton, removeParams } from "../../utilities";
 
 export async function renderCategory(container){
   sessionStorage.setItem("active-tab", "category");

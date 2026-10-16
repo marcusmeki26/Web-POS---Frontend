@@ -1,7 +1,7 @@
-import { categoryService } from "../services/categoryservice";
-import { foodService } from "../services/foodservice";
-import { sizeService } from "../services/sizeService";
-import { createOkButton, createCancelBtn, removeParams } from '../utilities';
+import { categoryService } from "../../services/categoryservice";
+import { foodService } from "../../services/foodservice";
+import { sizeService } from "../../services/sizeService";
+import { createOkButton, createCancelBtn, removeParams } from '../../utilities';
 
 // No add variant functionality :REMOVE-COMMENT
 // No add category functionlity :REMOVE-COMMENT

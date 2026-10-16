@@ -1,4 +1,3 @@
-import { renderCategory } from './admin/category.js';
 import { updateTime } from './pos/datefunction.js';
 import { authService, getRole } from './services/authservice.js';
 import { removeParams } from './utilities.js';
@@ -107,7 +106,7 @@ async function navigate(page){
         console.error("Failed to load module:", err);
       });
     }else if(page === "food"){
-      import('./admin/food.js')
+      import('./admin/menu/food.js')
       .then(({ renderFood }) => {
         removeParams();
         const liFoodRef = document.getElementById("food");
@@ -119,7 +118,7 @@ async function navigate(page){
         console.error("Failed to load module:", err);
       });
     }else if(page === "category"){
-      import('./admin/category.js')
+      import('./admin/menu/category.js')
         .then(({ renderCategory }) => {
           removeParams();
           const liCategoryRef = document.getElementById("category");
