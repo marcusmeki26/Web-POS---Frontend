@@ -31,6 +31,26 @@ export function createCancelBtn(text){
   return createCancelBtn;
 }
 
+export function createInputText(){
+  let createInputText = document.createElement("input");
+  const classes = ["w-full", "px-[.3rem]", "border-[.2rem]", "rounded-md", "border-primaryColor", "outline-[0]", "outer"];
+  createInputText.classList.add(...classes);
+  createInputText.type = "text";
+
+  return createInputText;
+}
+
+export function createLabel(text){
+  let createLabel = document.createElement("label");
+  const classes = ["text-primaryColor", "font-extrabold"];
+  createLabel.classList.add(...classes);
+
+  createLabel.textContent = text;
+  createLabel.for = text.replace(" ", "-").toLowerCase();
+
+  return createLabel;
+}
+
 export function removeParams(){
   const url = new URL(window.location.href);
   const newUrl = url.origin + "/landingpage";
