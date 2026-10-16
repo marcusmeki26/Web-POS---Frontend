@@ -77,22 +77,28 @@ async function renderMenuList(container){
   for(const category of categoriesCount){
     // DOM category here. Use button.
     const btn = document.createElement("button");
-    btn.textContent = `${category.categoryType}`;
+    btn.textContent = `${category.code}`;
     classes = ["text-xs", "border-1", "p-2", "rounded-sm", "border-dividerColor", "bg-white", "text-primaryColor", "leading-none", "cursor-pointer", "hover:bg-primaryColor", "hover:text-primaryBg"];
     btn.classList.add(...classes);
-    btn.id = category.categoryType.toLowerCase().replace(/ /g, "-");
+    btn.id = category.code.toLowerCase().replace(/ /g, "-");
 
     btn.addEventListener("click", async () => {
-      const menuList = await foodService.getMenuListByCategory(category.categoryType);
-      
-      moveActiveBtn(btn);
+      await foodService.getMenuListByCategory(category.id)
+        .then(response => {
+          if(response.status == 200){
+            moveActiveBtn(btn);
 
-      const url = new URL(window.location.href);
-      url.searchParams.set("category", category.categoryType);
+            const url = new URL(window.location.href);
+            url.searchParams.set("category", category.code);
 
-      window.history.pushState({}, "", url);
+            window.history.pushState({}, "", url);
 
-      displayMenuList(menuList);
+            displayMenuList(response.data);
+          }
+        })
+        .catch(error => {
+          console.error("Unable to retrieve menu: " + error);
+        });
     });
 
     const span = document.createElement("span");
@@ -139,6 +145,7 @@ async function renderMenuList(container){
       section.removeChild(section.children[1]);
     }
     if(menuList.length !== 0){
+      console.log(menuList);
       const divSecondRow = document.createElement("div");
       classes = ["flex-16", "p-3", "flex", "gap-[.5rem]", "min-h-0"];
       divSecondRow.classList.add(...classes);
