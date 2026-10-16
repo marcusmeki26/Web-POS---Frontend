@@ -126,6 +126,18 @@ async function navigate(page){
 
           renderCategory(app);
         })
+    }else if(page === "variant"){
+      import('./admin/menu/variant.js')
+      .then(({ renderVariant }) => {
+        removeParams();
+        const liInventoryRef = document.getElementById("variant");
+        liInventoryRef.classList.add("active");
+
+        renderVariant(app);
+      })
+      .catch((err) => {
+        console.error("Failed to load module:", err);
+      });
     }else if(page === "inventory"){
       import('./admin/inventory.js')
       .then(({ renderInventory }) => {
