@@ -1,3 +1,4 @@
+import { renderCategory } from './admin/category.js';
 import { updateTime } from './pos/datefunction.js';
 import { authService, getRole } from './services/authservice.js';
 import { removeParams } from './utilities.js';
@@ -41,8 +42,16 @@ async function navigate(page){
   const navLinks = document.getElementById("navigation-list");
   if(navLinks){
     // Removes .active class on li
-    for(const child of navLinks.children)
-      child.classList.remove("active");
+    for(const child of navLinks.children){
+      if(child.children.length > 1){
+        if(child.lastElementChild.children.length > 0){
+          for(const liChild of child.lastElementChild.lastElementChild.children)
+            liChild.classList.remove("active");
+        }
+      }else{
+        child.classList.remove("active");
+      }
+    }
   }
 
   if(roles.includes("CASHIER", "MANAGER")){
@@ -77,8 +86,8 @@ async function navigate(page){
       import('./admin/dashboard.js')
       .then(({ renderDashboard }) => {
         removeParams();
-        const menuList = document.getElementById("dashboard");
-        menuList.classList.add("active");
+        const liDashboardRef = document.getElementById("dashboard");
+        liDashboardRef.classList.add("active");
 
         renderDashboard(app);
       })
@@ -89,32 +98,41 @@ async function navigate(page){
       import('./admin/report.js')
       .then(({ renderReport }) => {
         removeParams();
-        const menuList = document.getElementById("report");
-        menuList.classList.add("active");
+        const liReportRef = document.getElementById("report");
+        liReportRef.classList.add("active");
 
         renderReport(app);
       })
       .catch((err) => {
         console.error("Failed to load module:", err);
       });
-    }else if(page === "menu"){
-      import('./admin/menu.js')
-      .then(({ renderMenu }) => {
+    }else if(page === "food"){
+      import('./admin/food.js')
+      .then(({ renderFood }) => {
         removeParams();
-        const menuList = document.getElementById("menu");
-        menuList.classList.add("active");
+        const liFoodRef = document.getElementById("food");
+        liFoodRef.classList.add("active");
 
-        renderMenu(app);
+        renderFood(app);
       })
       .catch((err) => {
         console.error("Failed to load module:", err);
       });
+    }else if(page === "category"){
+      import('./admin/category.js')
+        .then(({ renderCategory }) => {
+          removeParams();
+          const liCategoryRef = document.getElementById("category");
+          liCategoryRef.classList.add("active");
+
+          renderCategory(app);
+        })
     }else if(page === "inventory"){
       import('./admin/inventory.js')
       .then(({ renderInventory }) => {
         removeParams();
-        const menuList = document.getElementById("inventory");
-        menuList.classList.add("active");
+        const liInventoryRef = document.getElementById("inventory");
+        liInventoryRef.classList.add("active");
 
         renderInventory(app);
       })
@@ -125,8 +143,8 @@ async function navigate(page){
       import('./admin/user.js')
       .then(({ renderUser }) => {
         removeParams();
-        const menuList = document.getElementById("user");
-        menuList.classList.add("active");
+        const liUserRef = document.getElementById("user");
+        liUserRef.classList.add("active");
 
         renderUser(app);
       })
@@ -141,16 +159,17 @@ function initNavOnClick(){
   const navLists = document.getElementById("navigation-list");
   if(navLists){
     for(const child of navLists.children){
-      const span = child.querySelector("span");
-      
-      if (span) {
-        // Get the text, remove extra whitespace, and make it lowercase
-        const pageText = span.textContent.trim().toLowerCase();
-  
-        // Example mapping: "menu" -> "menu", "manage table" -> "manage-table"
-        const pageRoute = pageText.replace(" ", "-"); 
-  
-        child.addEventListener("click", () => navigate(pageRoute));
+      if(!child.lastElementChild.classList.contains("collapsible-content")){
+        const span = child.querySelector("span");
+        if (span) {
+          // Get the text, remove extra whitespace, and make it lowercase
+          const pageText = span.textContent.trim().toLowerCase();
+    
+          // Example mapping: "menu" -> "menu", "manage table" -> "manage-table"
+          const pageRoute = pageText.replace(" ", "-"); 
+    
+          child.addEventListener("click", () => navigate(pageRoute));
+        }
       }
     }
   }
@@ -178,8 +197,11 @@ function populateNavItem(){
       const li = document.createElement("li");
       classes = ["flex", "gap-[.5rem]", "items-center", "p-[.5rem]", "text-xs", "cursor-pointer"];
       li.classList.add(...classes);
-  
-      li.innerHTML = navItemSvg[index];
+
+      const divIconText = document.createElement("div");
+      classes = ["flex", "w-full", "gap-[.5rem]", "items-center"];
+      divIconText.classList.add(...classes);
+      divIconText.innerHTML = navItemSvg[index];
   
       const span = document.createElement("span");
       classes = ["font-medium", "text-primaryColor"];
@@ -187,7 +209,10 @@ function populateNavItem(){
       span.textContent = item;
       const liId = (item).toLowerCase().replace(" ", "-");
       li.id = liId;
-      li.appendChild(span);
+      divIconText.appendChild(span);
+      // li.appendChild(span);
+
+      li.appendChild(divIconText);
   
       ulCntr.appendChild(li);
     });
@@ -225,12 +250,28 @@ function populateNavItem(){
       </svg>`
     ];
     const navItems = ["Dashboard", "Report", "Menu", "Inventory", "User"];
+    // Makes the navigation item collapsible. Adds an arrow beside the text
+    // 0 = No
+    // 1 = Yes
+    const navItemCollapsible = [0, 0, 1, 0 ,0];
+    // If the navItemCollapsible is 0 leave it as empty array. Else fill values
+    const navItemCollapsibleContent = [
+      [],
+      [],
+      ["Food", "Category", "Variant"],
+      [],
+      []
+    ];
     navItems.forEach((item, index) => {
       const li = document.createElement("li");
-      classes = ["flex", "gap-[.5rem]", "items-center", "p-[.5rem]", "text-xs", "cursor-pointer"];
+      classes = ["flex", "flex-col", "justify-between", "p-[.5rem]", "text-xs", "cursor-pointer"];
       li.classList.add(...classes);
   
-      li.innerHTML = navItemSvg[index];
+      // li.innerHTML = navItemSvg[index];
+      const divIconText = document.createElement("div");
+      classes = ["flex", "w-full", "gap-[.5rem]", "items-center"];
+      divIconText.classList.add(...classes);
+      divIconText.innerHTML = navItemSvg[index];
   
       const span = document.createElement("span");
       classes = ["font-medium", "text-primaryColor"];
@@ -238,8 +279,65 @@ function populateNavItem(){
       span.textContent = item;
       const liId = (item).toLowerCase().replace(" ", "-");
       li.id = liId;
-      li.appendChild(span);
-  
+      divIconText.appendChild(span);
+      // li.appendChild(span);
+
+      li.appendChild(divIconText);
+
+      if(navItemCollapsible[index] == 1){
+        divIconText.innerHTML += `
+          <svg class="ml-auto" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        `;
+        
+        const divCollapsibleMenu = document.createElement("div");
+        classes = ["collapsible-content", "pl-[.8rem]"];
+        divCollapsibleMenu.classList.add(...classes);
+        divIconText.addEventListener("click", () => {
+          if(divCollapsibleMenu.classList.contains("active")){
+            divCollapsibleMenu.classList.remove("active");
+            if(divIconText.lastElementChild instanceof SVGElement){
+              const path = divIconText.lastElementChild.querySelectorAll("path");
+              path[0].setAttribute("d", "M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9");
+            }
+          }else{
+            divCollapsibleMenu.innerHTML = ""; // Reset inner HTML
+            divCollapsibleMenu.classList.add("active"); 
+            if(divIconText.lastElementChild instanceof SVGElement){
+              const path = divIconText.lastElementChild.querySelectorAll("path");
+              path[0].setAttribute("d", "M6 15L12 9L18 15"); 
+            }
+
+            const ulMenuCntr = document.createElement("ul");
+            classes = ["flex", "flex-col", "gap-[.5rem]", "pt-[.5rem]"];
+            ulMenuCntr.classList.add(...classes);
+
+            navItemCollapsibleContent[index].forEach(menu => {
+              const liMenuTxtCntr = document.createElement("li");
+              classes = ["p-[.3rem]"];
+              liMenuTxtCntr.classList.add(...classes);
+              const spanCollabsible = document.createElement("span");
+              classes = ["font-medium", "text-primaryColor"];
+              spanCollabsible.classList.add(...classes);
+              spanCollabsible.textContent = menu;
+              liMenuTxtCntr.appendChild(spanCollabsible); 
+
+              const pageText = menu.trim().toLowerCase();
+              const pageRoute = pageText.replace(" ", "-"); 
+              liMenuTxtCntr.addEventListener("click", () => navigate(pageRoute));
+              const liMenuTxtCntrId = menu.toLowerCase().replace(" ", "-");
+              liMenuTxtCntr.id = liMenuTxtCntrId;
+
+              ulMenuCntr.appendChild(liMenuTxtCntr);
+            });
+            divCollapsibleMenu.appendChild(ulMenuCntr);
+          }
+        });
+
+        li.appendChild(divCollapsibleMenu);
+      }
+      
       ulCntr.appendChild(li);
     });
   }
