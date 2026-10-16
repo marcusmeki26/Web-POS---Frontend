@@ -298,7 +298,7 @@ export async function renderCategory(container){
       });
       
       const deleteBtn = createCancelBtn("Delete");
-      deleteBtn.type = "submit";
+      deleteBtn.type = "button";
       actionsBtnCntr.appendChild(deleteBtn);
       deleteBtn.addEventListener("click", () => {
         const body = document.getElementById("body");
