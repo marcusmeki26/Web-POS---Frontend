@@ -30,7 +30,18 @@ export async function renderFood(container){
     .catch(error => {
       console.error("There was a problem fetching categories: " + error);
     });
-  const sizes = await sizeService.getSizes();
+  
+  let sizes = [];
+  await sizeService.getSizes()
+    .then(response => {
+      if(response.status == 200)
+        sizes = response.data;
+      else
+        console.error("Unhandled status code: " + response.data);
+    })
+    .catch(error => {
+      console.error("There was a problem fetching sizes: " + error);
+    });
 
   if(categoriesCount){
     for(const category of categoriesCount){
