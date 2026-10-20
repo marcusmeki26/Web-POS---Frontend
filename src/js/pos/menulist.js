@@ -303,7 +303,7 @@ async function renderMenuList(container){
                     // imgMD.style.height = "100%";
                     // imgMD.src = "/sample_img.jpg";
                     imgMD.src = imageURL;
-                    console.log("test: " + imageURL)
+
                     imgMD.classList.add(...classes);
       
                     // Right Side Container
@@ -403,9 +403,9 @@ async function renderMenuList(container){
                       placed: false,
                       tableId: null
                     }
-  
+
                     const response = await orderService.postOrder(orderData);
-                    if(response.status != 201) // Resets the DOM of mid container
+                    if(response.status != 200) // Resets the DOM of mid container
                       SCMidCntr.innerHTML = ``;
                     else{
                       SCMidCntr.appendChild(divMenuDisplay);
@@ -523,7 +523,6 @@ async function renderMenuList(container){
                 // imgMD.style.height = "100%";
                 // imgMD.src = "/sample_img.jpg";
                 imgMD.src = imageURL;
-                console.log("test: " + imageURL);
                 imgMD.classList.add(...classes);
   
                 // Right Side Container
@@ -626,7 +625,7 @@ async function renderMenuList(container){
                 };
   
                 const response = await orderService.postOrder(orderData);
-                if(response.status != 201) // Resets the DOM of mid container
+                if(response.status != 200) // Resets the DOM of mid container
                   SCMidCntr.innerHTML = ``;
                 else{
                   SCMidCntr.appendChild(divMenuDisplay);
@@ -899,8 +898,7 @@ async function renderMenuList(container){
                   tableId: lSelectBTNS.selectedIndex
                 });
               });
-              
-              console.log(orders);
+
               response = await orderService.patchOrdersByReceiptNo(receiptNo, orders);
             }else{ // If not existing request
               patchRequest = {
