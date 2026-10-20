@@ -520,10 +520,10 @@ async function renderManageTable(container){
       }
       
       const paymentData = {
-        number: tenderType[2],
+        tenderType: tenderType[2],
         payment: payment,
         totalAmount: totalAmtToPay,
-        shortFoodDesc: tenderType[0],
+        tenderDescription: tenderType[0],
         receiptNo: orderList[0].receiptNo,
         tableNo: orderList[0].tableId
       }
