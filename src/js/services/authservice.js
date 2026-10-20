@@ -6,8 +6,8 @@ let accessToken = null;
 export const authService = {
   login: async (creds) => { // Returns -> 
     const response = await api.post(loginApi, creds);
-    setAccessToken(response.data.access_token);
-    localStorage.setItem("refresh_token", response.data.refresh_token);
+    setAccessToken(response.data.accessToken);
+    localStorage.setItem("refresh_token", response.data.refreshToken);
     return response;
   },
   refresh: async() => {
@@ -16,7 +16,7 @@ export const authService = {
       refreshToken: refreshToken
     }
     const response = await api.post(refreshApi, token);
-    setAccessToken(response.data.access_token)
+    setAccessToken(response.data.accessToken)
     return response;
   }
 }
