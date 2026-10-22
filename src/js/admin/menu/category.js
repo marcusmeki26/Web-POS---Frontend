@@ -248,8 +248,7 @@ export async function renderCategory(container){
   
           if(isValid){
             const patchRequest = {
-              id: category.id,
-              code: code,
+              code: code
             };
             
             await categoryService.patchCategory(patchRequest, category.id)
