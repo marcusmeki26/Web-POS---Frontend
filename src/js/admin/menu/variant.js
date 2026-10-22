@@ -1,5 +1,5 @@
 import { sizeService } from "../../services/sizeService";
-import { createCancelBtn, createOkButton } from "../../utilities";
+import { createCancelBtn, createInputText, createLabel, createOkButton, removeParams } from "../../utilities";
 
 export async function renderVariant(container){
   sessionStorage.setItem("active-tab", "variant");
@@ -27,7 +27,106 @@ export async function renderVariant(container){
   classes = ["text-xs", "border-1", "p-2", "rounded-sm", "border-dividerColor", "bg-white", "text-primaryColor", "leading-none", "cursor-pointer", "hover:bg-primaryColor", "hover:text-primaryBg"];
   btnAddVariant.classList.add(...classes);
   btnAddVariant.addEventListener("click", () => {
-    console.error("No implementation!");
+    const body = document.getElementById("body")
+
+    const divAddPopup = document.createElement("div");
+    classes = ["flex", "justify-center", "items-center", "absolute", "w-full", "h-full", "bg-secondaryBg/50", "text-primaryBg", "z-[3]"];
+    divAddPopup.classList.add(...classes);
+
+    const divAddPopupCntr = document.createElement("div");
+    classes = ["flex", "flex-col", "gap-[.6rem]", "w-[35.5%]", "h-max","bg-primaryBg", "p-2", "rounded-md", "shadow-md"];
+    divAddPopupCntr.classList.add(...classes);
+
+    const spanAddTitle = document.createElement("span");
+    classes = ["text-3xl", "font-extrabold", "text-primaryColor"];
+    spanAddTitle.classList.add(...classes);
+    spanAddTitle.textContent = "Add Variant";
+    divAddPopupCntr.appendChild(spanAddTitle);
+
+    const formAddCategory = document.createElement("form");
+    classes = ["flex", "flex-col", "gap-[.5rem]", "text-black"];
+    formAddCategory.classList.add(...classes);
+
+    const divSizeName = document.createElement("div");
+    const inputSizeName = createInputText();
+    inputSizeName.id = "size-name";
+    const lblSizeName = createLabel("Size Name");
+    divSizeName.appendChild(lblSizeName);
+    divSizeName.appendChild(inputSizeName);
+    formAddCategory.appendChild(divSizeName);
+
+    const divBtnCntr = document.createElement("div");
+    classes = ["col-span-full", "flex", "gap-[.3rem]"];
+    divBtnCntr.classList.add(...classes);
+
+    const saveBtn = createOkButton("Save");
+    saveBtn.type = "button";
+    divBtnCntr.appendChild(saveBtn);
+
+    const cancelBtn = createCancelBtn("Cancel");
+    cancelBtn.type = "button";
+    divBtnCntr.appendChild(cancelBtn);
+    formAddCategory.appendChild(divBtnCntr);
+
+    divAddPopupCntr.appendChild(formAddCategory);
+    divAddPopup.appendChild(divAddPopupCntr);
+    body.appendChild(divAddPopup);
+
+    saveBtn.addEventListener("click", async () => {
+      const sizeName = inputSizeName.value.trim();
+
+      if(sizeName === ""){
+        alert("Please fill missing fields");
+        return;
+      }
+
+      const postRequest = {
+        sizeName: sizeName
+      };
+
+      await sizeService.postSize(postRequest)
+        .then(response => {
+          if(response.status === 201){
+            const body = document.getElementById("body");
+  
+            body.removeChild(divAddPopup);
+
+            const divAddedPopup = document.createElement("div");
+            classes = ["flex", "justify-center", "items-center", "absolute", "w-full", "h-full", "bg-secondaryBg/50", "text-primaryColor", "z-[3]"];
+            divAddedPopup.classList.add(...classes);
+
+            const divAddedPopupCntr = document.createElement("div");
+            classes = ["flex", "flex-col", "gap-[.6rem]", "w-[30%]", "h-max","bg-primaryBg", "p-2", "rounded-md", "shadow-md"];
+            divAddedPopupCntr.classList.add(...classes);
+
+            const h1Title = document.createElement("h1");
+            classes = ["text-3xl", "font-extrabold"];
+            h1Title.classList.add(...classes);
+            h1Title.textContent = "Added successfully!";
+            divAddedPopupCntr.appendChild(h1Title);
+            
+            const okBtn = createOkButton();
+            okBtn.type = "button";
+            divAddedPopupCntr.appendChild(okBtn);
+
+            divAddedPopup.appendChild(divAddedPopupCntr);
+            body.appendChild(divAddedPopup);
+
+            okBtn.addEventListener("click", () => {
+              window.location.reload();
+            });
+          }else{
+            console.error("Unhandled status code: " + response.status);
+          }
+        })
+        .catch(error => {
+          console.error("Unable to perform adding: " + error);
+        })
+    });
+
+    cancelBtn.addEventListener("click", () => {
+      body.removeChild(divAddPopup);
+    });
   });
 
   divFRTS.appendChild(btnAddVariant);
@@ -88,14 +187,200 @@ export async function renderVariant(container){
       editBtn.type = "button";
       actionsBtnCntr.appendChild(editBtn);
       editBtn.addEventListener("click", () => {
-        console.error("No implementation!");
+        const url = new URL(window.location.href);
+        url.searchParams.set("size", size.sizeName);
+        window.history.pushState({}, "", url);
+  
+        const body = document.getElementById("body")
+  
+        const divEditPopup = document.createElement("div");
+        classes = ["flex", "justify-center", "items-center", "absolute", "w-full", "h-full", "bg-secondaryBg/50", "text-primaryBg", "z-[3]"];
+        divEditPopup.classList.add(...classes);
+  
+        const divEditPopupCntr = document.createElement("div");
+        classes = ["flex", "flex-col", "gap-[.6rem]", "w-[35.5%]", "h-max","bg-primaryBg", "p-2", "rounded-md", "shadow-md"];
+        divEditPopupCntr.classList.add(...classes);
+  
+        const spanEditTitle = document.createElement("span");
+        classes = ["text-3xl", "font-extrabold", "text-primaryColor"];
+        spanEditTitle.classList.add(...classes);
+        spanEditTitle.textContent = `Edit Category: ${size.sizeName}`;
+        divEditPopupCntr.appendChild(spanEditTitle);
+  
+        const formSizeDetails = document.createElement("form");
+        classes = ["flex", "flex-col", "gap-[.5rem]", "text-black"];
+        formSizeDetails.classList.add(...classes);
+  
+        const divCode = document.createElement("div");
+        const inputSizeName = createInputText();
+        inputSizeName.id = "size-name";
+        inputSizeName.value = size.sizeName;
+        inputSizeName.defaultValue = size.sizeName;
+        const lblSizeName = createLabel("Size Name");
+        divCode.appendChild(lblSizeName);
+        divCode.appendChild(inputSizeName);
+        formSizeDetails.appendChild(divCode);
+  
+        const divBtnCntr = document.createElement("div");
+        classes = ["col-span-full", "flex", "gap-[.3rem]"];
+        divBtnCntr.classList.add(...classes);
+  
+        const updateBtn = createOkButton("Update");
+        updateBtn.type = "button";
+        divBtnCntr.appendChild(updateBtn);
+  
+        const cancelBtn = createCancelBtn("Cancel");
+        cancelBtn.type = "button";
+        divBtnCntr.appendChild(cancelBtn);
+        formSizeDetails.appendChild(divBtnCntr);
+  
+        divEditPopupCntr.appendChild(formSizeDetails);
+        divEditPopup.appendChild(divEditPopupCntr);
+        body.appendChild(divEditPopup);
+
+        updateBtn.addEventListener("click", async () => {
+          let isValid = true;
+          const sizeNameValue = inputSizeName.value.trim();
+
+          if(sizeNameValue == ""){
+            alert("Please fill missing fields");
+            return;
+          }
+
+          if(sizeNameValue === inputSizeName.defaultValue)
+            isValid = false;
+
+          if(isValid){
+            const patchRequest = {
+              sizeName: sizeNameValue
+            };
+
+            await sizeService.patchSize(patchRequest, size.id)
+              .then(response => {
+                if(response.status == 200){
+                  const body = document.getElementById("body");
+    
+                  body.removeChild(divEditPopup);
+  
+                  const divEditedPopup = document.createElement("div");
+                  classes = ["flex", "justify-center", "items-center", "absolute", "w-full", "h-full", "bg-secondaryBg/50", "text-primaryColor", "z-[3]"];
+                  divEditedPopup.classList.add(...classes);
+  
+                  const divEditedPopupCntr = document.createElement("div");
+                  classes = ["flex", "flex-col", "gap-[.6rem]", "w-[30%]", "h-max","bg-primaryBg", "p-2", "rounded-md", "shadow-md"];
+                  divEditedPopupCntr.classList.add(...classes);
+  
+                  const h1Title = document.createElement("h1");
+                  classes = ["text-3xl", "font-extrabold"];
+                  h1Title.classList.add(...classes);
+                  h1Title.textContent = "Edited successfully!";
+                  divEditedPopupCntr.appendChild(h1Title);
+                  
+                  const okBtn = createOkButton();
+                  okBtn.type = "button";
+                  divEditedPopupCntr.appendChild(okBtn);
+  
+                  divEditedPopup.appendChild(divEditedPopupCntr);
+                  body.appendChild(divEditedPopup);
+  
+                  okBtn.addEventListener("click", () => {
+                    window.location.reload();
+                  });
+                }else{
+                  console.error("Unhandled status code: " + response.status);
+                }
+              })
+              .catch(error => {
+                console.error("Unable to perform update: " + error);
+              })
+          }else{
+            alert("No fields to update");
+          }
+        });
+
+        cancelBtn.addEventListener("click", () => {
+          removeParams();
+          body.removeChild(divEditPopup);
+        });
       });
 
       const deleteBtn = createCancelBtn("Delete");
       deleteBtn.type = "button";
       actionsBtnCntr.appendChild(deleteBtn);
       deleteBtn.addEventListener("click", () => {
-        console.error("No implementation!");
+        const body = document.getElementById("body");
+    
+        const divConfirmationPopup = document.createElement("div")
+        classes = ["flex", "justify-center", "items-center", "text-primaryColor", "absolute", "w-full", "h-full", "bg-secondaryBg/50", "text-primaryBg", "z-[3]"];
+        divConfirmationPopup.classList.add(...classes);
+        
+        const divConfirmationPopupCntr = document.createElement("div");
+        classes = ["flex", "flex-col", "gap-[.6rem]", "w-[30%]", "h-max","bg-primaryBg", "p-2", "rounded-md", "shadow-md"];
+        divConfirmationPopupCntr.classList.add(...classes);
+        const spanMessage = document.createElement("span");
+        classes = ["text-xl"];
+        spanMessage.classList.add(...classes);
+        spanMessage.textContent = "Are you sure you want to delete?";
+        divConfirmationPopupCntr.appendChild(spanMessage);
+        const btnCntr = document.createElement("div");
+        classes = ["flex", "gap-[.3rem]"];
+        btnCntr.classList.add(...classes);
+        const btnOk = createOkButton();
+        btnCntr.appendChild(btnOk);
+        const btnCancel = createCancelBtn();
+        btnCntr.appendChild(btnCancel);
+        divConfirmationPopupCntr.appendChild(btnCntr);
+        divConfirmationPopup.appendChild(divConfirmationPopupCntr);
+        body.appendChild(divConfirmationPopup);
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("size", size.sizeName);
+        window.history.pushState({}, "", url);
+
+        btnOk.addEventListener("click", async () => {
+          await sizeService.deleteSize(size.id)
+            .then(response => {
+              if(response.status === 204){
+                const body = document.getElementById("body");
+  
+                body.removeChild(divConfirmationPopup);
+
+                const divDeletePopup = document.createElement("div");
+                classes = ["flex", "justify-center", "items-center", "absolute", "w-full", "h-full", "bg-secondaryBg/50", "text-primaryColor", "z-[3]"];
+                divDeletePopup.classList.add(...classes);
+
+                const divDeletePopupCntr = document.createElement("div");
+                classes = ["flex", "flex-col", "gap-[.6rem]", "w-[30%]", "h-max","bg-primaryBg", "p-2", "rounded-md", "shadow-md"];
+                divDeletePopupCntr.classList.add(...classes);
+
+                const h1Title = document.createElement("h1");
+                classes = ["text-3xl", "font-extrabold"];
+                h1Title.classList.add(...classes);
+                h1Title.textContent = "Deleted successfully!";
+                divDeletePopupCntr.appendChild(h1Title);
+                
+                const okBtn = createOkButton();
+                okBtn.type = "button";
+                divDeletePopupCntr.appendChild(okBtn);
+
+                divDeletePopup.appendChild(divDeletePopupCntr);
+                body.appendChild(divDeletePopup);
+
+                okBtn.addEventListener("click", () => {
+                  window.location.reload();
+                });
+              }else{
+                console.error("Unhandled status code: " + response.status);
+              }
+            })
+            .catch(error => {
+              console.error("Unable to perform deletion: " + error.response.data.message);
+            })
+        });
+
+        btnCancel.addEventListener("click", () => {
+          body.removeChild(divConfirmationPopup);
+        });
       });
 
       divVariantCntr.appendChild(actionsBtnCntr);
