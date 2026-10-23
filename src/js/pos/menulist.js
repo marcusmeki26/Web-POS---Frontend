@@ -405,7 +405,7 @@ async function renderMenuList(container){
                     }
 
                     const response = await orderService.postOrder(orderData);
-                    if(response.status != 200) // Resets the DOM of mid container
+                    if(response.status != 201) // Resets the DOM of mid container
                       SCMidCntr.innerHTML = ``;
                     else{
                       SCMidCntr.appendChild(divMenuDisplay);
@@ -625,7 +625,7 @@ async function renderMenuList(container){
                 };
   
                 const response = await orderService.postOrder(orderData);
-                if(response.status != 200) // Resets the DOM of mid container
+                if(response.status != 201) // Resets the DOM of mid container
                   SCMidCntr.innerHTML = ``;
                 else{
                   SCMidCntr.appendChild(divMenuDisplay);
@@ -1178,8 +1178,9 @@ async function renderMenuList(container){
 
       if(element.sizeId != null){
         // Editing of button should happend during opening of modal
-
+        addEventsOnEditAndDeleteSvg(divMDRSBSCntr, element);
       }else{
+        console.log('here');
         const btnATC = document.getElementById(`${element.number}-ATC`);
         const btnAM = document.getElementById(`${element.number}-AM`);
 
@@ -1255,11 +1256,12 @@ async function renderMenuList(container){
       btnYes.addEventListener("click",async () => {
         const deleteRequest = {
           receiptNo: element.receiptNo,
-          number: element.number
+          number: element.number,
+          sizeId: element.sizeId
         };
 
         const response = await orderService.deleteOrder(deleteRequest);
-        if(response.status === 200){
+        if(response.status === 204){
           window.location.reload();
           alert(`${element.shortFoodDesc} was successfully removed.`);
         }else{
