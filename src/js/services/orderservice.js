@@ -8,7 +8,7 @@ export const orderService = {
   },
   postPaymentLine: async (paymentData) => { // Returns -> boolean
     const reponse = await api.post(`${orderApi}/payment`, paymentData);
-    return reponse.data;
+    return reponse;
   },
   getOrders: async () => { // Returns -> list of orders
     const response = await api.get(orderApi);
