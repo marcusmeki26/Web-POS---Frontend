@@ -86,7 +86,7 @@ export async function renderCategory(container){
 
       await categoryService.postCategory(postRequest)
         .then(response => {
-          if(response.status == 200){
+          if(response.status == 201){
             const body = document.getElementById("body");
   
             body.removeChild(divAddPopup);
