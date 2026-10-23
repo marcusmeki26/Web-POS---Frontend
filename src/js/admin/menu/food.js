@@ -409,7 +409,7 @@ export async function renderFood(container){
 
       await foodService.postFood(foodPostRequestFormData)
         .then(response => {
-          if(response.status == 200){
+          if(response.status == 201){
             const body = document.getElementById("body");
 
             body.removeChild(divAddPopup);
@@ -714,7 +714,7 @@ export async function renderFood(container){
           inputMenuShortDesc.classList.add(...classes);
           inputMenuShortDesc.id = "menu-short-desc";
           inputMenuShortDesc.type = "text";
-          inputMenuShortDesc.name = "shortDesc";
+          inputMenuShortDesc.name = "shortFoodDesc";
           inputMenuShortDesc.value = element.shortFoodDesc;
           inputMenuShortDesc.defaultValue = element.shortFoodDesc;
           const lblMenuShortDesc = document.createElement("label");
