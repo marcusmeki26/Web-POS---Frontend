@@ -528,18 +528,23 @@ async function renderManageTable(container){
         tableNo: orderList[0].tableId
       }
 
-      const response = await orderService.postPaymentLine(paymentData);
-      console.log(response);
-      if(response.processTransaction){
-        // Posting of transaction
-        bodyRef.removeChild(divNumKeyboard);
-        // const orderListByTableId = await orderService.getOrderByTableId(`${paymentData.tableNo}`);
-        PostBreakdownDisplay(bodyRef, totalAmtToPay, payment, response.orderList);
-      }else{
-        bodyRef.removeChild(divNumKeyboard);
-        // const orderListByTableId = await orderService.getOrderByTableId(`${paymentData.tableNo}`);
-        populateCollapsibleContent(response.orderList, collapSibleCntrRef);
-      }
+      await orderService.postPaymentLine(paymentData)
+        .then(response => {
+          if(response.status == 200){
+            if(response.data.processTransaction){
+              // Posting of transaction
+              bodyRef.removeChild(divNumKeyboard);
+              PostBreakdownDisplay(bodyRef, totalAmtToPay, payment, response.data.orderList);
+            }else{
+              bodyRef.removeChild(divNumKeyboard);
+              populateCollapsibleContent(response.data.orderList, collapSibleCntrRef);
+            }
+          }else
+            console.error("Unhandeld status code: " + response.status);
+        })
+        .catch(error => {
+          console.error("There was a problem during payment: " + error);
+        });
     });
 
     // const btnCancel = document.createElement("button");
