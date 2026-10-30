@@ -17,6 +17,7 @@ export const authService = {
     }
     const response = await api.post(refreshApi, token);
     setAccessToken(response.data.accessToken)
+    localStorage.setItem("refresh_token", response.data.refreshToken);
     return response;
   }
 }
