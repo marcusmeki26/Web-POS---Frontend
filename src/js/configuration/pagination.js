@@ -1,0 +1,4 @@
+export const PAGINATION_CONFIG = {
+  DEFUALT_PAGE_SIZE: 2,
+  DEFAULT_SORT_BY_FIELD: "id"
+}; 
