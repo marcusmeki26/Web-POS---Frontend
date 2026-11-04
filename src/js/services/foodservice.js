@@ -1,14 +1,25 @@
 import api from './api';
+import { PAGINATION_CONFIG } from '../configuration/pagination';
+
 const foodApi = import.meta.env.VITE_FOOD_API;
 
 export const foodService = {
-  getMenuList: async () => {
-    const response = await api.get(`${foodApi}`);
-    return response.data;
+  getMenuList: async (page, size, sortBy) => {
+    if(page == null || size == null || sortBy == null)
+      return await api.get(`${foodApi}`, {
+        params: {
+          size: PAGINATION_CONFIG.DEFUALT_PAGE_SIZE,
+          sort: "id"
+        }
+      });
+    else 
+      return await api.get(`${foodApi}?page=${page}&size=${size}&sort=${sortBy}`);
   },
-  getMenuListByCategory: async (categoryType) => { // Returns -> A list of food by category
-    const response = await api.get(`${foodApi}?category=${categoryType}`);
-    return response;
+  getMenuListByCategory: async (categoryType, page, size, sortBy) => { // Returns -> A list of food by category
+    if(page === null)
+      return await api.get(`${foodApi}?category=${categoryType}&size=${size}&sort=${sortBy}`);
+    else
+      return await api.get(`${foodApi}?category=${categoryType}&page=${page}&size=${size}&sort=${sortBy}`);
   },
   getImage: async (foodId) => { // Returns -> The image based on its food id
     const response = await api.get(`${foodApi}/image/${foodId}`, { responseType: 'blob' });
