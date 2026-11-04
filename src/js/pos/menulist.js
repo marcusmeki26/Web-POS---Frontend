@@ -4,6 +4,7 @@ import { orderService } from "../services/orderservice";
 import { taxService } from "../services/taxservice";
 import { tableListService } from "../services/tablelistservice";
 import { orderTypeService } from "../services/ordertypeservice";
+import { PAGINATION_CONFIG } from "../configuration/pagination";
 
 // No take-out functionality :REMOVE-COMMENT
 
@@ -24,6 +25,7 @@ async function renderMenuList(container){
 
   let classes;
   let totalCatCnt = 0;
+  let gCategoryId = null;
 
   const categoriesCount = await getCategoriesCount();
   const foods = await getFoods();
@@ -55,15 +57,21 @@ async function renderMenuList(container){
   classes = ["text-xs", "border-1", "p-2", "rounded-sm", "border-dividerColor", "bg-white", "text-primaryColor", "leading-none", "cursor-pointer", "hover:bg-primaryColor", "hover:text-primaryBg"];
   btnAll.classList.add(...classes);
   btnAll.addEventListener("click", async () => {
-    const menuList = await foodService.getMenuList();
-
-    moveActiveBtn(btnAll);
-
-    const url = new URL(window.location.href);
-    const newUrl = url.origin + "/landingpage";
-    window.history.pushState({}, "", newUrl);
-
-    displayMenuList(menuList);
+    await foodService.getMenuList(null, null, null)
+    .then(response => {
+        if(response.status === 200){
+          moveActiveBtn(btnAll);
+      
+          const url = new URL(window.location.href);
+          const newUrl = url.origin + "/landingpage";
+          window.history.pushState({}, "", newUrl);
+      
+          displayMenuList(response.data);
+        }
+      })
+      .catch(error => {
+        console.error("There was a problem fetching menu: " + error);
+      });
   });
 
   const spanAll = document.createElement("span");
@@ -83,13 +91,14 @@ async function renderMenuList(container){
     btn.id = category.code.toLowerCase().replace(/ /g, "-");
 
     btn.addEventListener("click", async () => {
-      await foodService.getMenuListByCategory(category.id)
+      await foodService.getMenuListByCategory(category.id, null, PAGINATION_CONFIG.DEFUALT_PAGE_SIZE, PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD)
         .then(response => {
           if(response.status == 200){
             moveActiveBtn(btn);
 
             const url = new URL(window.location.href);
             url.searchParams.set("category", category.code);
+            gCategoryId = category.id;
 
             window.history.pushState({}, "", url);
 
@@ -138,12 +147,15 @@ async function renderMenuList(container){
   
   // UTILITIES
   // Displays Second Row
-  async function displayMenuList(menuList){
+  async function displayMenuList(menuContent){
     let receiptNo = "";
 
     if(section.children.length === 2){ // Deletes the first DOM
       section.removeChild(section.children[1]);
     }
+
+    const menuList = menuContent.content;
+
     if(menuList.length !== 0){
       console.log(menuList);
       const divSecondRow = document.createElement("div");
@@ -168,18 +180,18 @@ async function renderMenuList(container){
         // Image
         const imgMenu = document.createElement("img");
         let imageURL = "";
-        await foodService.getImage(element.id)
-        .then(response => {
-          if(response.status == 200 || response.status == 201){
-            imageURL = URL.createObjectURL(response.data); // Converts blob into a string to let image tag handle it
-            
-            imgMenu.src = imageURL;
-          }
-        })
-        .catch(error => {
-          console.error("Unable to load image: " + error);
-          imgMenu.src = "/sample_img.jpg";
-        });
+        foodService.getImage(element.id)
+          .then(response => {
+            if(response.status == 200 || response.status == 201){
+              imageURL = URL.createObjectURL(response.data); // Converts blob into a string to let image tag handle it
+              
+              imgMenu.src = imageURL;
+            }
+          })
+          .catch(error => {
+            console.error("Unable to load image: " + error);
+            imgMenu.src = "/sample_img.jpg";
+          });
         imgMenu.style.width = "100%";
         imgMenu.style.height = "130px";
         classes = ["rounded-sm"];
@@ -715,6 +727,160 @@ async function renderMenuList(container){
 
         divFC.appendChild(divMenuCntr);
       });
+
+      divSecondRow.appendChild(divFC);
+    
+      const url = new URL(window.location.href);
+      let isByCategory = url.searchParams.get("category") !== null ? true : false;
+      const currentPageNo = menuContent.pageNumber;
+      const totalPages = menuContent.totalPages;
+
+      const divPagination = document.createElement("div");
+      classes = ["col-span-[3]", "flex", "justify-center", "pb-[1rem]"];
+      divPagination.classList.add(...classes);
+      const divPaginationElement = document.createElement("div");
+      classes = ["flex", "gap-[.5rem]", "cursor-pointer"];
+      divPaginationElement.classList.add(...classes);
+      
+      const btnLessThan = document.createElement("button");
+      classes = ["p-[.5rem]", "rounded-full", "border-1",]
+      btnLessThan.classList.add(...classes);
+      if(currentPageNo != 0)
+        classes = ["border-dividerColor", "text-primaryColor", "cursor-pointer"];
+      else{
+        classes = ["border-borderColor", "text-borderColor", "cursor-not-allowed"]
+        btnLessThan.disabled = true;
+      }
+      btnLessThan.classList.add(...classes);
+      btnLessThan.textContent = '<'
+      btnLessThan.type = "button";
+      btnLessThan.addEventListener("click", async () => {
+        const size = menuContent.pageSize;
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("page", currentPageNo - 1);
+        url.searchParams.set("size", size);
+        url.searchParams.set("sort", PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD);
+        window.history.pushState({}, "", url);
+
+        if(isByCategory){
+          await foodService.getMenuListByCategory(gCategoryId, currentPageNo - 1, size, PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD)
+            .then(response => {
+              if(response.status === 200){
+                displayMenuList(response.data);
+              }
+            })
+            .catch(error => {
+              console.error("There was a problem fetching menu: " + error);
+            });
+        }else{
+          await foodService.getMenuList(currentPageNo - 1, size, PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD)
+            .then(response => {
+              if(response.status === 200){
+                displayMenuList(response.data);
+              }
+            })
+            .catch(error => {
+              console.error("There was a problem fetching menu: " + error);
+            });
+        }
+      });
+      divPaginationElement.appendChild(btnLessThan);
+      
+      for(let i = 1; i <= totalPages; i++){
+        const spanPaginationNumber = document.createElement("span");
+        classes = ["p-[.5rem]", "rounded-full", "border-1", "border-dividerColor"];
+        spanPaginationNumber.classList.add(...classes);
+        spanPaginationNumber.textContent = i;
+        divPaginationElement.appendChild(spanPaginationNumber);
+
+        if(i === (currentPageNo + 1))
+          classes = ["bg-primaryColor", "text-white"];
+        else
+          classes = ["text-primaryColor"];
+        spanPaginationNumber.classList.add(...classes);
+
+        spanPaginationNumber.addEventListener("click", async () => {
+          const size = menuContent.pageSize;
+
+          const url = new URL(window.location.href);
+          url.searchParams.set("page", i - 1);
+          url.searchParams.set("size", size);
+          url.searchParams.set("sort", PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD);
+          window.history.pushState({}, "", url);
+          
+          if(isByCategory){
+            await foodService.getMenuListByCategory(gCategoryId, i - 1, size, PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD)
+            .then(response => {
+              if(response.status === 200){
+                displayMenuList(response.data);
+              }
+            })
+            .catch(error => {
+              console.error("There was a problem fetching menu: " + error);
+            });
+          }else{
+            await foodService.getMenuList(i - 1, size, PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD)
+              .then(response => {
+                if(response.status === 200){
+                  displayMenuList(response.data);
+                }
+              })
+              .catch(error => {
+                console.error("There was a problem fetching menu: " + error);
+              });
+
+          }
+        });
+      }
+      
+      const btnGreaterThan = document.createElement("button");
+      classes = ["p-[.5rem]", "rounded-full", "border-1"];
+      btnGreaterThan.classList.add(...classes);
+      if(currentPageNo != totalPages - 1)
+        classes = ["border-dividerColor", "text-primaryColor", "cursor-pointer"];
+      else{
+        classes = ["border-borderColor", "text-borderColor", "cursor-not-allowed"]
+        btnGreaterThan.disabled = true;
+      }
+      btnGreaterThan.classList.add(...classes);
+      btnGreaterThan.textContent = '>'
+      btnGreaterThan.type = "button";
+      btnGreaterThan.addEventListener("click", async () => {
+        const size = menuContent.pageSize;
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("page", currentPageNo + 1);
+        url.searchParams.set("size", size);
+        url.searchParams.set("sort", PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD);
+        window.history.pushState({}, "", url);
+
+        if(isByCategory){
+          await foodService.getMenuListByCategory(gCategoryId, currentPageNo + 1, size, PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD)
+            .then(response => {
+              if(response.status === 200){
+                displayMenuList(response.data);
+              }
+            })
+            .catch(error => {
+              console.error("There was a problem fetching menu: " + error);
+            });
+        }else{
+          await foodService.getMenuList(currentPageNo + 1, size, PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD)
+            .then(response => {
+              if(response.status === 200){
+                displayMenuList(response.data);
+              }
+            })
+            .catch(error => {
+              console.error("There was a problem fetching menu: " + error);
+            });
+        }
+      });
+      divPaginationElement.appendChild(btnGreaterThan);
+      
+      divPagination.appendChild(divPaginationElement);
+      divFC.appendChild(divPagination);
 
       divSecondRow.appendChild(divFC);
 
