@@ -2,10 +2,7 @@ import { categoryService } from "../../services/categoryservice";
 import { foodService } from "../../services/foodservice";
 import { sizeService } from "../../services/sizeService";
 import { createOkButton, createCancelBtn, removeParams } from '../../utilities';
-
-// No add variant functionality :REMOVE-COMMENT
-// No add category functionlity :REMOVE-COMMENT
-// Move variant and category on its own page :REMOVE-COMMENT
+import { PAGINATION_CONFIG } from "../../configuration/pagination";
 
 export async function renderFood(container){
   const formatAmount = new Intl.NumberFormat("en-PH", {
@@ -17,6 +14,7 @@ export async function renderFood(container){
 
   let classes;
   let totalCatCnt = 0;
+  let gCategoryId = null;
 
   const categoriesCount = await categoryService.getCategoriesCount();
   let categories = [];
@@ -50,7 +48,7 @@ export async function renderFood(container){
   }
 
   const section = document.createElement("section");
-  classes = ["flex", "flex-col", "bg-secondaryBg", "h-full", "min-h-0"];
+  classes = ["flex", "flex-col", "h-full", "min-h-0", "max-h-max"];
   section.classList.add(...classes);
   section.id = "food-container";
 
@@ -472,15 +470,21 @@ export async function renderFood(container){
   classes = ["text-xs", "border-1", "p-2", "rounded-sm", "border-dividerColor", "bg-white", "text-primaryColor", "leading-none", "cursor-pointer", "hover:bg-primaryColor", "hover:text-primaryBg"];
   btnAll.classList.add(...classes);
   btnAll.addEventListener("click", async () => {
-    const menuList = await foodService.getMenuList();
+    await foodService.getMenuList(null, null, null)
+      .then(response => {
+        if(response.status === 200){
+          moveActiveBtn(btnAll);
 
-    moveActiveBtn(btnAll);
+          const url = new URL(window.location.href);
+          const newUrl = url.origin + "/landingpage";
+          window.history.pushState({}, "", newUrl);
 
-    const url = new URL(window.location.href);
-    const newUrl = url.origin + "/landingpage";
-    window.history.pushState({}, "", newUrl);
-
-    displayMenuList(menuList);
+          displayMenuList(response.data);
+        }
+      })
+      .catch(error => {
+        console.error("There was a problem fetching menu: " + error);
+      });
   });
 
   const spanAll = document.createElement("span");
@@ -504,9 +508,12 @@ export async function renderFood(container){
 
       const url = new URL(window.location.href);
       url.searchParams.set("category", category.code);
+      url.searchParams.set("size", PAGINATION_CONFIG.DEFUALT_PAGE_SIZE);
+      url.searchParams.set("sort", PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD);
       window.history.pushState({}, "", url);
+      gCategoryId = category.id;
 
-      await foodService.getMenuListByCategory(category.id)
+      await foodService.getMenuListByCategory(category.id, null, PAGINATION_CONFIG.DEFUALT_PAGE_SIZE, PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD)
         .then(response => {
           if(response.status == 200)
             displayMenuList(response.data);
@@ -549,22 +556,23 @@ export async function renderFood(container){
     }
   }
 
-  function displayMenuList(menuList){
+  function displayMenuList(menuContent){
     if(section.children.length === 2){ // Deletes the first DOM
       section.removeChild(section.children[1]);
     }
 
+    const menuList = menuContent.content;
+
     if(menuList.length !== 0){
       const divSecondRow = document.createElement("div");
-      classes = ["flex-16", "p-3", "flex", "gap-[.5rem]", "min-h-0"];
+      classes = ["flex-16", "p-3", "flex", "flex-col", "gap-[.5rem]", "min-h-0", "h-full"];
       divSecondRow.classList.add(...classes);
 
       // First Column
       const divFC = document.createElement("div");
-      classes = ["flex-3", "grid", "grid-cols-3", "gap-3", "h-max"];
+      classes = ["flex-3", "grid", "grid-cols-3", "gap-3", "max-h-max"];
       divFC.classList.add(...classes);
 
-      console.log(menuList);
       menuList.forEach(async element => {
         const inventory = element.inventory;
 
@@ -575,17 +583,17 @@ export async function renderFood(container){
         // Image
         const img = document.createElement("img");
         let imageURL;
-        await foodService.getImage(element.id)
-        .then(response => {
-          if(response.status == 200 || response.status == 201){
-              imageURL = URL.createObjectURL(response.data);
+        foodService.getImage(element.id)
+          .then(response => {
+            if(response.status == 200 || response.status == 201){
+                imageURL = URL.createObjectURL(response.data);
 
-              img.src = imageURL;
-            }
-          })
-          .catch(error => {
-            console.error("Unable to load image: " + error);
-            img.src = "/sample_img.jpg";
+                img.src = imageURL;
+              }
+            })
+            .catch(error => {
+              console.error("Unable to load image: " + error);
+              img.src = "/sample_img.jpg";
           });
         img.style.width = "100%";
         img.style.height = "130px";
@@ -1308,14 +1316,158 @@ export async function renderFood(container){
       
       divSecondRow.appendChild(divFC);
       section.appendChild(divSecondRow);
+      
+      const url = new URL(window.location.href);
+      let isByCategory = url.searchParams.get("category") !== null ? true : false;
+      const currentPageNo = menuContent.pageNumber;
+      const totalPages = menuContent.totalPages;
+
+      const divPagination = document.createElement("div");
+      classes = ["flex", "justify-center", "pb-[1rem]"];
+      divPagination.classList.add(...classes);
+      const divPaginationElement = document.createElement("div");
+      classes = ["flex", "gap-[.5rem]", "cursor-pointer"];
+      divPaginationElement.classList.add(...classes);
+      
+      const btnLessThan = document.createElement("button");
+      classes = ["p-[.5rem]", "rounded-full", "border-1",]
+      btnLessThan.classList.add(...classes);
+      if(currentPageNo != 0)
+        classes = ["border-dividerColor", "text-primaryColor", "cursor-pointer"];
+      else{
+        classes = ["border-borderColor", "text-borderColor", "cursor-not-allowed"]
+        btnLessThan.disabled = true;
+      }
+      btnLessThan.classList.add(...classes);
+      btnLessThan.textContent = '<'
+      btnLessThan.type = "button";
+      btnLessThan.addEventListener("click", async () => {
+        const size = menuContent.pageSize;
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("page", currentPageNo - 1);
+        url.searchParams.set("size", size);
+        url.searchParams.set("sort", PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD);
+        window.history.pushState({}, "", url);
+
+        if(isByCategory){
+          await foodService.getMenuListByCategory(gCategoryId, currentPageNo - 1, size, PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD)
+            .then(response => {
+              if(response.status === 200){
+                displayMenuList(response.data);
+              }
+            })
+            .catch(error => {
+              console.error("There was a problem fetching menu: " + error);
+            });
+        }else{
+          await foodService.getMenuList(currentPageNo - 1, size, PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD)
+            .then(response => {
+              if(response.status === 200){
+                displayMenuList(response.data);
+              }
+            })
+            .catch(error => {
+              console.error("There was a problem fetching menu: " + error);
+            });
+        }
+      });
+      divPaginationElement.appendChild(btnLessThan);
+      
+      for(let i = 1; i <= totalPages; i++){
+        const spanPaginationNumber = document.createElement("span");
+        classes = ["p-[.5rem]", "rounded-full", "border-1", "border-dividerColor"];
+        spanPaginationNumber.classList.add(...classes);
+        spanPaginationNumber.textContent = i;
+        divPaginationElement.appendChild(spanPaginationNumber);
+
+        if(i === (currentPageNo + 1))
+          classes = ["bg-primaryColor", "text-white"];
+        else
+          classes = ["text-primaryColor"];
+        spanPaginationNumber.classList.add(...classes);
+
+        spanPaginationNumber.addEventListener("click", async () => {
+          const size = menuContent.pageSize;
+
+          const url = new URL(window.location.href);
+          url.searchParams.set("page", i - 1);
+          url.searchParams.set("size", size);
+          url.searchParams.set("sort", PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD);
+          window.history.pushState({}, "", url);
+
+          if(isByCategory){
+            await foodService.getMenuListByCategory(gCategoryId, i - 1, size, PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD)
+              .then(response => {
+                if(response.status === 200){
+                  displayMenuList(response.data);
+                }
+              })
+              .catch(error => {
+                console.error("There was a problem fetching menu: " + error);
+              });
+          }else{
+            await foodService.getMenuList(i - 1, size, PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD)
+              .then(response => {
+                if(response.status === 200){
+                  displayMenuList(response.data);
+                }
+              })
+              .catch(error => {
+                console.error("There was a problem fetching menu: " + error);
+              });
+          }
+        });
+      }
+      
+      const btnGreaterThan = document.createElement("button");
+      classes = ["p-[.5rem]", "rounded-full", "border-1"];
+      btnGreaterThan.classList.add(...classes);
+      if(currentPageNo != totalPages - 1)
+        classes = ["border-dividerColor", "text-primaryColor", "cursor-pointer"];
+      else{
+        classes = ["border-borderColor", "text-borderColor", "cursor-not-allowed"]
+        btnGreaterThan.disabled = true;
+      }
+      btnGreaterThan.classList.add(...classes);
+      btnGreaterThan.textContent = '>'
+      btnGreaterThan.type = "button";
+      btnGreaterThan.addEventListener("click", async () => {
+        const size = menuContent.pageSize;
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("page", currentPageNo + 1);
+        url.searchParams.set("size", size);
+        url.searchParams.set("sort", PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD);
+        window.history.pushState({}, "", url);
+
+        if(isByCategory){
+          await foodService.getMenuListByCategory(gCategoryId, currentPageNo + 1, size, PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD)
+            .then(response => {
+              if(response.status === 200){
+                displayMenuList(response.data);
+              }
+            })
+            .catch(error => {
+              console.error("There was a problem fetching menu: " + error);
+            });
+        }else{
+          await foodService.getMenuList(currentPageNo + 1, size, PAGINATION_CONFIG.DEFAULT_SORT_BY_FIELD)
+            .then(response => {
+              if(response.status === 200){
+                displayMenuList(response.data);
+              }
+            })
+            .catch(error => {
+              console.error("There was a problem fetching menu: " + error);
+            });
+        }
+      });
+      divPaginationElement.appendChild(btnGreaterThan);
+      
+      divPagination.appendChild(divPaginationElement);
+      divSecondRow.appendChild(divPagination);
       container.appendChild(section);
-      // divSCChildBottom.appendChild(divBTD);
-      // divSCChildBottom.appendChild(divBOI);
-      // divSCChildBottom.appendChild(btnAddToTable);
-
-      // divSC.appendChild(divSCChildBottom);
-
-      // divSecondRow.appendChild(divSC);
     }
   }
 
