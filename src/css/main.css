@@ -44,7 +44,8 @@ html {
   border-radius: .3rem;
 }
 
-#navigation-list li.active svg path{
+#navigation-list li.active svg path,
+#navigation-list li.active svg circle{
   stroke: #FFF;
 }
 
