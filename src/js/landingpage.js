@@ -250,26 +250,35 @@ function populateNavItem(){
         <path d="M4 6L11.3846 2.90586C13.0337 2.21492 13.8582 1.86945 14.5149 2.04543C14.9408 2.15954 15.3173 2.41193 15.5859 2.76336C16 3.30532 16 4.20355 16 6" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`,
       `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20 18V10C20 8.11438 20 7.17157 19.4142 6.58579C18.8284 6 17.8856 6 16 6H4V18C4 19.8856 4 20.8284 4.58579 21.4142C5.17157 22 6.11438 22 8 22H16C17.8856 22 18.8284 22 19.4142 21.4142C20 20.8284 20 19.8856 20 18Z" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M12 11C13.6569 11 15 12.3431 15 14M12 11C10.3431 11 9 12.3431 9 14M12 11V10M15 14H9M15 14H16M9 14H8" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M8 18H16" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M4 6L11.3846 2.90586C13.0337 2.21492 13.8582 1.86945 14.5149 2.04543C14.9408 2.15954 15.3173 2.41193 15.5859 2.76336C16 3.30532 16 4.20355 16 6" stroke="#3A6EA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2.5 7.5V13.5C2.5 17.2712 2.5 19.1569 3.67157 20.3284C4.84315 21.5 6.72876 21.5 10.5 21.5H13.5C17.2712 21.5 19.1569 21.5 20.3284 20.3284C21.5 19.1569 21.5 17.2712 21.5 13.5V7.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#3A6EA5"/>
+        <path d="M2.5 7.5L3.86909 5.31461C4.73113 3.93861 5.16215 3.2506 5.84013 2.8753C6.51812 2.5 7.32998 2.5 8.95371 2.5H15.1029C16.7621 2.5 17.5918 2.5 18.2795 2.8894C18.9673 3.2788 19.3941 3.99021 20.2478 5.41303L21.5 7.5H2.5Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#3A6EA5"/>
+        <path d="M12 7.5V2.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#3A6EA5"/>
+        <path d="M6 18H11M6 15H9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#3A6EA5"/>
       </svg>`,
       `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M13.1977 8H10.8023C7.35836 8 5.03641 11.5806 6.39304 14.7994C6.58202 15.2477 7.0156 15.5385 7.49535 15.5385H8.33892C8.62326 15.5385 8.87111 15.7352 8.94007 16.0157L10.0261 20.4328C10.2525 21.3539 11.0663 22 12 22C12.9337 22 13.7475 21.3539 13.9739 20.4328L15.0599 16.0157C15.1289 15.7352 15.3767 15.5385 15.6611 15.5385H16.5047C16.9844 15.5385 17.418 15.2477 17.607 14.7994C18.9636 11.5806 16.6416 8 13.1977 8Z" stroke="#3A6EA5" stroke-width="1.5"/>
         <circle cx="12" cy="5" r="3" stroke="#3A6EA5" stroke-width="1.5"/>
+      </svg>`,
+      `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 16L16.7201 15.2733C19.4486 15.046 20.0611 14.45 20.3635 11.7289L21 6" stroke-width="1.5" stroke-linecap="round" stroke="#3A6EA5"/>
+        <path d="M6 6H22" stroke-width="1.5" stroke-linecap="round" stroke="#3A6EA5"/>
+        <circle cx="6" cy="20" r="2" stroke="#3A6EA5" stroke-width="1.5"/>
+        <circle cx="17" cy="20" r="2" stroke="#3A6EA5" stroke-width="1.5"/>
+        <path d="M8 20L15 20" stroke-width="1.5" stroke-linecap="round" stroke="#3A6EA5"/>
+        <path d="M2 2H2.966C3.91068 2 4.73414 2.62459 4.96326 3.51493L7.93852 15.0765C8.08887 15.6608 7.9602 16.2797 7.58824 16.7616L6.63213 18" stroke-width="1.5" stroke-linecap="round" stroke="#3A6EA5"/>
       </svg>`
     ];
-    const navItems = ["Dashboard", "Report", "Menu", "Inventory", "User"];
+    const navItems = ["Dashboard", "Report", "Menu", "Inventory", "User", "Terminal"];
     // Makes the navigation item collapsible. Adds an arrow beside the text
     // 0 = No
     // 1 = Yes
-    const navItemCollapsible = [0, 0, 1, 0 ,0];
+    const navItemCollapsible = [0, 0, 1, 0, 0, 0];
     // If the navItemCollapsible is 0 leave it as empty array. Else fill values
     const navItemCollapsibleContent = [
       [],
       [],
       ["Food", "Category", "Variant"],
+      [],
       [],
       []
     ];
