@@ -159,7 +159,6 @@ export async function renderFood(container){
     selectMenuCat.classList.add(...classes);
     selectMenuCat.id = "input-menu-category";
     categories.forEach(category  => {
-      console.log(category);
       selectMenuCat.add(new Option(category.code, category.id));
     });
     const lblMenuCat = document.createElement("label");
